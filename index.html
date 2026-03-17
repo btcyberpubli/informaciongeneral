@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Informes - Sistema Unificado</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ═══════ HEADER ═══════ */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .header-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        /* ═══════ TABS ═══════ */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: #f0f0f0;
+            color: #333;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover,
+        .tab-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* ═══════ CONTENIDO ═══════ */
+        .content {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ═══════ GRILLAS ═══════ */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .card-content {
+            font-size: 0.95em;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* ═══════ TABLAS ═══════ */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        thead {
+            background: #f0f0f0;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        /* ═══════ BADGES ═══════ */
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* ═══════ ALERTS ═══════ */
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        /* ═══════ CARGANDO ═══════ */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ═══════ BOTONES ═══════ */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* ═══════ FOOTER ═══════ */
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            padding: 20px;
+            opacity: 0.8;
+        }
+
+        /* ═══════ RESPONSIVE ═══════ */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-btn {
+                width: 100%;
+            }
+        }
+
+        /* ═══════ LISTA DE CAMPAÑAS ═══════ */
+        .campaign-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .campaign-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .campaign-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9em;
+            color: #666;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            display: flex;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        /* ═══════ PANEL RANKING ═══════ */
+        .ranking-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .ranking-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .ranking-name {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .ranking-value {
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        /* ═══════ SELECT ═══════ */
+        select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            background: white;
+        }
+
+        select:hover,
+        select:focus {
+            border-color: #667eea;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- HEADER -->
+        <div class="header">
+            <h1>📊 Dashboard de Informes</h1>
+            <p>Sistema Unificado de Análisis de Campañas y Paneles</p>
+            
+            <div class="header-info" id="headerStats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalPaneles">-</div>
+                    <div class="stat-label">Paneles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalCampanias">-</div>
+                    <div class="stat-label">Campañas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalMensajes">-</div>
+                    <div class="stat-label">Mensajes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="cpmPromedio">-</div>
+                    <div class="stat-label">CPM Promedio</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTROLES -->
+        <div class="button-group">
+            <select id="selectInforme" style="flex: 1; max-width: 300px;">
+                <option value="">Selecciona un informe...</option>
+            </select>
+            <button class="btn" onclick="cargarInformeActual()">🔄 Actualizar</button>
+            <button class="btn btn-secondary" onclick="exportarJSON()">📥 Descargar JSON</button>
+        </div>
+
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="cambiarTab(this, 'resumen')">📈 Resumen</button>
+            <button class="tab-btn" onclick="cambiarTab(this, 'paneles')">📦 Paneles</button>
+            <button class="tab-btn" onclick="cambiarTab(this, 'campanias')">🎯 Campañas</button>
+            <button class="tab-btn" onclick="cambiarTab(this, 'alertas')">⚠️ Alertas</button>
+            <button class="tab-btn" onclick="cambiarTab(this, 'clientes')">👥 Clientes</button>
+        </div>
+
+        <!-- CONTENIDO: RESUMEN -->
+        <div id="resumen" class="content active">
+            <div class="grid">
+                <div class="card">
+                    <h3>📊 Resumen Diario</h3>
+                    <div class="card-content">
+                        <table>
+                            <tr>
+                                <td><strong>Total Paneles:</strong></td>
+                                <td id="res-totalPaneles">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Campañas:</strong></td>
+                                <td id="res-totalCampanias">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Mensajes:</strong></td>
+                                <td id="res-totalMensajes">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Total Gasto:</strong></td>
+                                <td id="res-totalGasto">-</td>
+                            </tr>
+                            <tr>
+                                <td><strong>CPM Promedio:</strong></td>
+                                <td id="res-cpmPromedio">-</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>🎯 Top 5 Mejores Campañas</h3>
+                    <div id="topCampanias" class="card-content"></div>
+                </div>
+
+                <div class="card">
+                    <h3>🔴 Campañas Costosas (CPM > $0.80)</h3>
+                    <div class="card-content">
+                        <div id="resumenAlertasCPM"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO: PANELES -->
+        <div id="paneles" class="content">
+            <div class="grid">
+                <div class="card" style="grid-column: 1 / -1;">
+                    <h3>📦 Rendimiento de Paneles</h3>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Panel</th>
+                                    <th>Mensajes</th>
+                                    <th>Cargas</th>
+                                    <th>% Carga</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablapaneles"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>⬇️ Paneles Bajos (< 100 msg)</h3>
+                    <div id="panelesBajos" class="card-content"></div>
+                </div>
+
+                <div class="card">
+                    <h3>⬆️ Cargas Altas (> 40%)</h3>
+                    <div id="cargasAltas" class="card-content"></div>
+                </div>
+
+                <div class="card">
+                    <h3>⚠️ Cargas Bajas (< 20%)</h3>
+                    <div id="cargasBajas" class="card-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO: CAMPAÑAS -->
+        <div id="campanias" class="content">
+            <div class="grid">
+                <div class="card" style="grid-column: 1 / -1;">
+                    <h3>🎯 Lista Completa de Campañas</h3>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Campaña</th>
+                                    <th>Mensajes</th>
+                                    <th>Gasto</th>
+                                    <th>CPM</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaCampanias"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CONTENIDO: ALERTAS -->
+        <div id="alertas" class="content">
+            <div id="alertasContainer"></div>
+        </div>
+
+        <!-- CONTENIDO: CLIENTES -->
+        <div id="clientes" class="content">
+            <div class="grid">
+                <div class="card" style="grid-column: 1 / -1;">
+                    <h3>👥 Rendimiento por Cliente</h3>
+                    <div style="overflow-x: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Campañas</th>
+                                    <th>Mensajes</th>
+                                    <th>Gasto</th>
+                                    <th>CPM Promedio</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaClientes"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>Sistema Unificado de Informes v1.0 • Actualizado: <span id="ultimaActualizacion">-</span></p>
+    </div>
+
+    <script>
+        let datosActuales = null;
+
+        // Cargar informe actual al iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            cargarInformeActual();
+            cargarListaInformes();
+        });
+
+        async function cargarInformeActual() {
+            try {
+                const response = await fetch('http://168.231.70.228:3334/api/informe-diario');
+                datosActuales = await response.json();
+                
+                if (datosActuales.error) {
+                    console.log('Generando datos...');
+                    return;
+                }
+                
+                actualizarDashboard(datosActuales);
+                document.getElementById('ultimaActualizacion').textContent = 
+                    new Date(datosActuales.fecha).toLocaleString('es-AR');
+            } catch (error) {
+                console.error('Error cargando informe:', error);
+            }
+        }
+
+        async function cargarListaInformes() {
+            try {
+                const response = await fetch('http://168.231.70.228:3334/api/informes');
+                const informes = await response.json();
+                const select = document.getElementById('selectInforme');
+                
+                informes.forEach(informe => {
+                    const option = document.createElement('option');
+                    option.value = informe.ruta;
+                    option.textContent = `${informe.nombre} (${informe.tipo})`;
+                    select.appendChild(option);
+                });
+                
+                select.addEventListener('change', async (e) => {
+                    if (e.target.value) {
+                        const response = await fetch(`http://168.231.70.228:3334/api/informe/${e.target.value}`);
+                        const datos = await response.json();
+                        datosActuales = datos;
+                        actualizarDashboard(datos);
+                    }
+                });
+            } catch (error) {
+                console.error('Error cargando lista:', error);
+            }
+        }
+
+        function actualizarDashboard(datos) {
+            // Header stats
+            document.getElementById('totalPaneles').textContent = datos.resumen.totalPaneles;
+            document.getElementById('totalCampanias').textContent = datos.resumen.totalCampanias;
+            document.getElementById('totalMensajes').textContent = datos.resumen.totalMensajes;
+            document.getElementById('cpmPromedio').textContent = `$${datos.resumen.CPMPromedio}`;
+
+            // Resumen
+            document.getElementById('res-totalPaneles').textContent = datos.resumen.totalPaneles;
+            document.getElementById('res-totalCampanias').textContent = datos.resumen.totalCampanias;
+            document.getElementById('res-totalMensajes').textContent = datos.resumen.totalMensajes;
+            document.getElementById('res-totalGasto').textContent = `$${datos.resumen.totalGasto.toFixed(2)}`;
+            document.getElementById('res-cpmPromedio').textContent = `$${datos.resumen.CPMPromedio}`;
+
+            // Top campañas
+            const topCampanias = datos.campanias.slice(0, 5);
+            document.getElementById('topCampanias').innerHTML = topCampanias
+                .map(c => `
+                    <div class="campaign-item">
+                        <div class="campaign-name">${c.nombre}</div>
+                        <div class="campaign-stats">
+                            <div class="stat"><span>${c.mensajes}</span> <span class="stat-value">msj</span></div>
+                            <div class="stat">$<span class="stat-value">${c.cpm.toFixed(4)}</span></div>
+                            <span class="badge ${c.cpm < 0.80 ? 'badge-success' : 'badge-danger'}">${c.cliente}</span>
+                        </div>
+                    </div>
+                `).join('');
+
+            // Alertas CPM
+            document.getElementById('resumenAlertasCPM').innerHTML = 
+                `<strong>${datos.resumen.campaniasCPMAltoCosto}</strong> campañas con CPM alto`;
+
+            // Paneles
+            actualizarTablaPaneles(datos.paneles);
+            actualizarPanelesBajos(datos.resumen.panelesBajos);
+            actualizarCargasAltas(datos.resumen.panelesCargaAlta);
+            actualizarCargasBajas(datos.resumen.panelesCargaBaja);
+
+            // Campañas
+            actualizarTablaCampanias(datos.campanias);
+
+            // Alertas
+            actualizarAlertas(datos.resumen);
+
+            // Clientes
+            actualizarTablaClientes(datos.campanias);
+        }
+
+        function actualizarTablaPaneles(paneles) {
+            const tbody = document.getElementById('tablapaneles');
+            tbody.innerHTML = paneles
+                .sort((a, b) => b.totalMensajes - a.totalMensajes)
+                .map(p => {
+                    let estado = 'badge-success';
+                    if (p.totalMensajes < 100) estado = 'badge-warning';
+                    if (p.totalMensajes === 0) estado = 'badge-danger';
+                    
+                    return `
+                        <tr>
+                            <td>${p.nombre}</td>
+                            <td>${p.totalMensajes}</td>
+                            <td>${p.cargas}</td>
+                            <td>${p.porcentajeCarga.toFixed(1)}%</td>
+                            <td><span class="badge ${estado}">${p.totalMensajes > 0 ? 'Activo' : 'Sin datos'}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+        }
+
+        function actualizarPanelesBajos(panelesBajos) {
+            const container = document.getElementById('panelesBajos');
+            container.innerHTML = panelesBajos
+                .sort((a, b) => b.mensajes - a.mensajes)
+                .map((p, i) => `
+                    <div class="ranking-item">
+                        <div class="ranking-number">${i + 1}</div>
+                        <div class="ranking-name">${p.nombre}</div>
+                        <div class="ranking-value">${p.mensajes} msg</div>
+                    </div>
+                `).join('') || '<p>✓ Sin paneles bajos</p>';
+        }
+
+        function actualizarCargasAltas(cargasAltas) {
+            const container = document.getElementById('cargasAltas');
+            container.innerHTML = cargasAltas
+                .sort((a, b) => b.porcentaje - a.porcentaje)
+                .map((p, i) => `
+                    <div class="ranking-item">
+                        <div class="ranking-number">${i + 1}</div>
+                        <div class="ranking-name">${p.nombre}</div>
+                        <div class="ranking-value">${p.porcentaje.toFixed(1)}%</div>
+                    </div>
+                `).join('') || '<p>✓ Sin cargas altas</p>';
+        }
+
+        function actualizarCargasBajas(cargasBajas) {
+            const container = document.getElementById('cargasBajas');
+            container.innerHTML = cargasBajas
+                .sort((a, b) => a.porcentaje - b.porcentaje)
+                .map((p, i) => `
+                    <div class="ranking-item">
+                        <div class="ranking-number">${i + 1}</div>
+                        <div class="ranking-name">${p.nombre}</div>
+                        <div class="ranking-value">${p.porcentaje.toFixed(1)}%</div>
+                    </div>
+                `).join('') || '<p>✓ Sin cargas bajas</p>';
+        }
+
+        function actualizarTablaCampanias(campanias) {
+            const tbody = document.getElementById('tablaCampanias');
+            tbody.innerHTML = campanias.map(c => `
+                <tr>
+                    <td>${c.cliente}</td>
+                    <td>${c.nombre}</td>
+                    <td>${c.mensajes}</td>
+                    <td>$${c.gasto.toFixed(2)}</td>
+                    <td>
+                        <span class="badge ${c.cpm < 0.80 ? 'badge-success' : 'badge-danger'}">
+                            $${c.cpm.toFixed(4)}
+                        </span>
+                    </td>
+                    <td><span class="badge ${c.estado === 'ACTIVE' ? 'badge-info' : 'badge-warning'}">${c.estado}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function actualizarTablaClientes(campanias) {
+            const clientesMap = {};
+            
+            campanias.forEach(c => {
+                if (!clientesMap[c.cliente]) {
+                    clientesMap[c.cliente] = {
+                        cliente: c.cliente,
+                        campanias: 0,
+                        mensajes: 0,
+                        gasto: 0
+                    };
+                }
+                clientesMap[c.cliente].campanias++;
+                clientesMap[c.cliente].mensajes += c.mensajes;
+                clientesMap[c.cliente].gasto += c.gasto;
+            });
+            
+            const clientes = Object.values(clientesMap)
+                .sort((a, b) => b.mensajes - a.mensajes);
+            
+            const tbody = document.getElementById('tablaClientes');
+            tbody.innerHTML = clientes.map(c => {
+                const cpmPromedio = (c.gasto / c.mensajes).toFixed(4);
+                return `
+                    <tr>
+                        <td>${c.cliente}</td>
+                        <td>${c.campanias}</td>
+                        <td>${c.mensajes}</td>
+                        <td>$${c.gasto.toFixed(2)}</td>
+                        <td><span class="badge ${cpmPromedio < 0.80 ? 'badge-success' : 'badge-danger'}">$${cpmPromedio}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function actualizarAlertas(resumen) {
+            const container = document.getElementById('alertasContainer');
+            let html = '';
+            
+            if (resumen.panelesBajos.length > 0) {
+                html += `
+                    <div class="alert alert-warning">
+                        ⚠️ <strong>${resumen.panelesBajos.length}</strong> paneles con menos de 100 mensajes
+                    </div>
+                `;
+            }
+            
+            if (resumen.campaniasCPMAltoCosto > 0) {
+                html += `
+                    <div class="alert alert-danger">
+                        🔴 <strong>${resumen.campaniasCPMAltoCosto}</strong> campañas con CPM > $0.80
+                    </div>
+                `;
+            }
+            
+            if (resumen.panelesCargaBaja.length > 0) {
+                html += `
+                    <div class="alert alert-warning">
+                        📉 <strong>${resumen.panelesCargaBaja.length}</strong> paneles con carga < 20%
+                    </div>
+                `;
+            }
+            
+            if (resumen.panelesCargaAlta.length > 0) {
+                html += `
+                    <div class="alert alert-info">
+                        📈 <strong>${resumen.panelesCargaAlta.length}</strong> paneles con carga > 40%
+                    </div>
+                `;
+            }
+            
+            if (!html) {
+                html = '<div class="alert alert-success">✓ Todo en orden - No hay alertas</div>';
+            }
+            
+            container.innerHTML = html;
+        }
+
+        function cambiarTab(btn, tabId) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+            
+            btn.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function exportarJSON() {
+            if (!datosActuales) {
+                alert('No hay datos para exportar');
+                return;
+            }
+            
+            const dataStr = JSON.stringify(datosActuales, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `informe_${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        }
+    </script>
+</body>
+</html>
