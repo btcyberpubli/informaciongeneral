@@ -330,6 +330,8 @@
     </div>
 
     <script>
+        // Configuración de servidor VPS
+        const API_BASE = 'https://accountant-services.co.uk';
         let chartPaneles = null, chartCPM = null;
 
         function cambiarTab(e, tab) {
@@ -344,7 +346,7 @@
 
         async function cargarDatos() {
             try {
-                const res = await fetch('/api/informe-diario');
+                const res = await fetch(`${API_BASE}/api/informe-diario`);
                 const datos = await res.json();
                 if (datos && !datos.error) mostrarDiario(datos);
             } catch (err) { console.error(err); }
@@ -429,7 +431,7 @@
         }
 
         async function cargarAnalisis() {
-            const res = await fetch('/api/analisis');
+            const res = await fetch(`${API_BASE}/api/analisis`);
             const analisis = await res.json();
             let html = '<div>';
             if (analisis.panelesBajosMensajes?.length) {
@@ -449,7 +451,7 @@
         }
 
         async function cargarObjetivos() {
-            const res = await fetch('/api/objetivos');
+            const res = await fetch(`${API_BASE}/api/objetivos`);
             const obj = await res.json();
             const html = Object.entries(obj).map(([panel, valor]) => 
                 `<div class="form-group"><label>${panel}</label><input type="number" id="obj-${panel}" value="${valor}" min="0"></div>`
@@ -462,7 +464,7 @@
             document.querySelectorAll('#form-objetivos .form-group').forEach(group => {
                 obj[group.querySelector('label').textContent] = parseInt(group.querySelector('input').value) || 0;
             });
-            const res = await fetch('/api/objetivos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
+            const res = await fetch(`${API_BASE}/api/objetivos`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
             if ((await res.json()).success) {
                 alert('✅ Guardado');
                 cargarDatos();
@@ -470,7 +472,7 @@
         }
 
         async function cargarHistorial() {
-            const res = await fetch('/api/historial');
+            const res = await fetch(`${API_BASE}/api/historial`);
             const hist = await res.json();
             const html = hist.length ? `<table><thead><tr><th>Fecha</th><th>Acción</th></tr></thead><tbody>${hist.map(h => `<tr><td>${h.fecha}</td><td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;">Ver</button></td></tr>`).join('')}</tbody></table>` : '<p>Sin historial</p>';
             document.getElementById('historial-contenido').innerHTML = html;
