@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard de Informes - Sistema Unificado</title>
+    <title>📊 Dashboard Informes</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,8 +13,9 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
             min-height: 100vh;
             padding: 20px;
         }
@@ -21,147 +23,151 @@
         .container {
             max-width: 1400px;
             margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
 
-        /* ═══════ HEADER ═══════ */
-        .header {
-            background: rgba(255, 255, 255, 0.95);
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
 
-        .header h1 {
-            color: #667eea;
+        header h1 {
             font-size: 2.5em;
             margin-bottom: 10px;
         }
 
-        .header p {
-            color: #666;
+        header .fecha-info {
             font-size: 1.1em;
-        }
-
-        .header-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .stat-number {
-            font-size: 2em;
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 0.9em;
             opacity: 0.9;
         }
 
-        /* ═══════ TABS ═══════ */
         .tabs {
             display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
+            border-bottom: 2px solid #eee;
             flex-wrap: wrap;
         }
 
         .tab-btn {
-            padding: 12px 24px;
+            flex: 1;
+            min-width: 150px;
+            padding: 15px 20px;
             border: none;
-            background: #f0f0f0;
-            color: #333;
-            border-radius: 8px;
+            background: #f8f9fa;
             cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s ease;
+            font-size: 0.95em;
+            font-weight: 600;
+            transition: all 0.3s;
         }
 
-        .tab-btn:hover,
         .tab-btn.active {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            background: white;
+            border-bottom: 3px solid #667eea;
+            color: #667eea;
         }
 
-        /* ═══════ CONTENIDO ═══════ */
+        .tab-btn:hover {
+            background: white;
+        }
+
         .content {
-            display: none;
-            animation: fadeIn 0.3s ease;
+            padding: 30px;
         }
 
-        .content.active {
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
             display: block;
         }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        /* ═══════ GRILLAS ═══════ */
-        .grid {
+        .resumen-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
         .card {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
         }
 
         .card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
-            font-size: 1.3em;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+            text-transform: uppercase;
         }
 
-        .card-content {
-            font-size: 0.95em;
+        .card .valor {
+            font-size: 1.8em;
+            font-weight: bold;
             color: #333;
-            line-height: 1.6;
         }
 
-        /* ═══════ TABLAS ═══════ */
+        .card.success {
+            border-left-color: #10b981;
+        }
+
+        .card.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .card.danger {
+            border-left-color: #ef4444;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            height: 300px;
+        }
+
+        .chart-container h3 {
+            margin-bottom: 15px;
+            color: #333;
+            font-size: 0.95em;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 250px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-bottom: 30px;
+            background: white;
         }
 
         thead {
-            background: #f0f0f0;
+            background: #f8f9fa;
+            border-bottom: 2px solid #ddd;
         }
 
         th {
             padding: 12px;
             text-align: left;
             font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #667eea;
+            color: #666;
+            font-size: 0.9em;
         }
 
         td {
@@ -170,702 +176,308 @@
         }
 
         tr:hover {
-            background: #f9f9f9;
+            background: #f8f9fa;
         }
 
-        /* ═══════ BADGES ═══════ */
-        .badge {
+        .status-badge {
             display: inline-block;
-            padding: 6px 12px;
+            padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.85em;
             font-weight: 600;
         }
 
-        .badge-success {
-            background: #d4edda;
-            color: #155724;
-        }
+        .status-ok { background: #d1fae5; color: #065f46; }
+        .status-warn { background: #fed7aa; color: #92400e; }
+        .status-fail { background: #fee2e2; color: #7f1d1d; }
 
-        .badge-warning {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .badge-danger {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .badge-info {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        /* ═══════ ALERTS ═══════ */
-        .alert {
-            padding: 15px;
+        .objetivos-form {
+            background: #f8f9fa;
+            padding: 20px;
             border-radius: 8px;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .alert-warning {
-            background: #fff3cd;
-            color: #856404;
-            border-left: 4px solid #ffc107;
-        }
-
-        .alert-danger {
-            background: #f8d7da;
-            color: #721c24;
-            border-left: 4px solid #dc3545;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border-left: 4px solid #28a745;
-        }
-
-        /* ═══════ CARGANDO ═══════ */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: white;
-        }
-
-        .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top: 4px solid white;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 15px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* ═══════ BOTONES ═══════ */
-        .button-group {
-            display: flex;
-            gap: 10px;
             margin-bottom: 20px;
-            flex-wrap: wrap;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .form-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 0.95em;
         }
 
         .btn {
-            padding: 12px 24px;
+            padding: 10px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
+            font-weight: 600;
             cursor: pointer;
-            font-size: 1em;
-            transition: all 0.3s ease;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            transition: all 0.3s;
         }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        /* ═══════ FOOTER ═══════ */
-        .footer {
-            text-align: center;
-            color: white;
-            margin-top: 40px;
-            padding: 20px;
-            opacity: 0.8;
-        }
-
-        /* ═══════ RESPONSIVE ═══════ */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 1.8em;
-            }
-
-            .grid {
-                grid-template-columns: 1fr;
-            }
-
-            .header-info {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .tabs {
-                flex-direction: column;
-            }
-
-            .tab-btn {
-                width: 100%;
-            }
-        }
-
-        /* ═══════ LISTA DE CAMPAÑAS ═══════ */
-        .campaign-item {
-            background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .campaign-name {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
-        }
-
-        .campaign-stats {
-            display: flex;
-            gap: 15px;
-            font-size: 0.9em;
-            color: #666;
-            flex-wrap: wrap;
-        }
-
-        .stat {
-            display: flex;
-            gap: 5px;
-        }
-
-        .stat-value {
-            font-weight: 600;
-            color: #667eea;
-        }
-
-        /* ═══════ PANEL RANKING ═══════ */
-        .ranking-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            background: #f9f9f9;
-            border-radius: 6px;
-            margin-bottom: 8px;
-        }
-
-        .ranking-number {
+        .btn-primary {
             background: #667eea;
             color: white;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 10px;
         }
 
-        .ranking-name {
-            flex: 1;
-            font-weight: 500;
+        .btn-primary:hover {
+            background: #5568d3;
         }
 
-        .ranking-value {
-            color: #667eea;
-            font-weight: bold;
-        }
-
-        /* ═══════ SELECT ═══════ */
-        select {
-            padding: 10px 15px;
-            border: 1px solid #ddd;
+        .alert {
+            padding: 20px;
             border-radius: 8px;
-            font-size: 1em;
-            cursor: pointer;
-            background: white;
+            margin-bottom: 20px;
+            border-left: 4px solid;
         }
 
-        select:hover,
-        select:focus {
-            border-color: #667eea;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .alert-danger { background: #fee2e2; border-left-color: #dc2626; color: #7f1d1d; }
+        .alert-warning { background: #fed7aa; border-left-color: #f59e0b; color: #92400e; }
+        .alert-success { background: #d1fae5; border-left-color: #10b981; color: #065f46; }
+
+        .alert h3 { margin-bottom: 10px; }
+        .alert ul { margin-left: 20px; }
+        .alert li { margin-bottom: 5px; }
+
+        h2 { color: #333; font-size: 1.3em; }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 1.8em; }
+            .charts-grid { grid-template-columns: 1fr; }
+            table { font-size: 0.9em; }
+            th, td { padding: 8px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- HEADER -->
-        <div class="header">
+        <header>
             <h1>📊 Dashboard de Informes</h1>
-            <p>Sistema Unificado de Análisis de Campañas y Paneles</p>
-            
-            <div class="header-info" id="headerStats">
-                <div class="stat-card">
-                    <div class="stat-number" id="totalPaneles">-</div>
-                    <div class="stat-label">Paneles</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalCampanias">-</div>
-                    <div class="stat-label">Campañas</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="totalMensajes">-</div>
-                    <div class="stat-label">Mensajes</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" id="cpmPromedio">-</div>
-                    <div class="stat-label">CPM Promedio</div>
-                </div>
-            </div>
-        </div>
+            <div class="fecha-info"><span id="fechaActual"></span></div>
+        </header>
 
-        <!-- CONTROLES -->
-        <div class="button-group">
-            <select id="selectInforme" style="flex: 1; max-width: 300px;">
-                <option value="">Selecciona un informe...</option>
-            </select>
-            <button class="btn" onclick="cargarInformeActual()">🔄 Actualizar</button>
-            <button class="btn btn-secondary" onclick="exportarJSON()">📥 Descargar JSON</button>
-        </div>
-
-        <!-- TABS -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="cambiarTab(this, 'resumen')">📈 Resumen</button>
-            <button class="tab-btn" onclick="cambiarTab(this, 'paneles')">📦 Paneles</button>
-            <button class="tab-btn" onclick="cambiarTab(this, 'campanias')">🎯 Campañas</button>
-            <button class="tab-btn" onclick="cambiarTab(this, 'alertas')">⚠️ Alertas</button>
-            <button class="tab-btn" onclick="cambiarTab(this, 'clientes')">👥 Clientes</button>
+            <button class="tab-btn active" onclick="cambiarTab(event, 'diario')">📈 Diario</button>
+            <button class="tab-btn" onclick="cambiarTab(event, 'analisis')">🔍 Análisis</button>
+            <button class="tab-btn" onclick="cambiarTab(event, 'objetivos')">🎯 Objetivos</button>
+            <button class="tab-btn" onclick="cambiarTab(event, 'historial')">📅 Historial</button>
         </div>
 
-        <!-- CONTENIDO: RESUMEN -->
-        <div id="resumen" class="content active">
-            <div class="grid">
-                <div class="card">
-                    <h3>📊 Resumen Diario</h3>
-                    <div class="card-content">
-                        <table>
-                            <tr>
-                                <td><strong>Total Paneles:</strong></td>
-                                <td id="res-totalPaneles">-</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total Campañas:</strong></td>
-                                <td id="res-totalCampanias">-</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total Mensajes:</strong></td>
-                                <td id="res-totalMensajes">-</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Total Gasto:</strong></td>
-                                <td id="res-totalGasto">-</td>
-                            </tr>
-                            <tr>
-                                <td><strong>CPM Promedio:</strong></td>
-                                <td id="res-cpmPromedio">-</td>
-                            </tr>
-                        </table>
+        <div class="content">
+            <!-- DIARIO -->
+            <div id="tab-diario" class="tab-content active">
+                <div id="resumen-diario"></div>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>📊 Mensajes por Panel</h3>
+                        <div class="chart-wrapper"><canvas id="chartPaneles"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>💰 CPM de Campañas</h3>
+                        <div class="chart-wrapper"><canvas id="chartCPM"></canvas></div>
                     </div>
                 </div>
+                <h2 style="margin-top: 40px; margin-bottom: 20px;">Rendimiento por Panel</h2>
+                <table id="tabla-paneles">
+                    <thead><tr><th>Panel</th><th>Mensajes</th><th>Objetivo</th><th>%</th><th>Status</th><th>% Carga</th></tr></thead>
+                    <tbody id="tbody-paneles"></tbody>
+                </table>
+                <h2 style="margin-bottom: 20px;">Mejores Campañas</h2>
+                <table>
+                    <thead><tr><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th></tr></thead>
+                    <tbody id="tbody-mejores"></tbody>
+                </table>
+            </div>
 
-                <div class="card">
-                    <h3>🎯 Top 5 Mejores Campañas</h3>
-                    <div id="topCampanias" class="card-content"></div>
-                </div>
+            <!-- ANÁLISIS -->
+            <div id="tab-analisis" class="tab-content">
+                <div id="analisis-contenido"></div>
+            </div>
 
-                <div class="card">
-                    <h3>🔴 Campañas Costosas (CPM > $0.80)</h3>
-                    <div class="card-content">
-                        <div id="resumenAlertasCPM"></div>
-                    </div>
+            <!-- OBJETIVOS -->
+            <div id="tab-objetivos" class="tab-content">
+                <div class="objetivos-form">
+                    <h2 style="margin-bottom: 20px;">Editar Objetivos</h2>
+                    <div class="form-grid" id="form-objetivos"></div>
+                    <button class="btn btn-primary" onclick="guardarObjetivos()">💾 Guardar</button>
                 </div>
             </div>
-        </div>
 
-        <!-- CONTENIDO: PANELES -->
-        <div id="paneles" class="content">
-            <div class="grid">
-                <div class="card" style="grid-column: 1 / -1;">
-                    <h3>📦 Rendimiento de Paneles</h3>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Panel</th>
-                                    <th>Mensajes</th>
-                                    <th>Cargas</th>
-                                    <th>% Carga</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablapaneles"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>⬇️ Paneles Bajos (< 100 msg)</h3>
-                    <div id="panelesBajos" class="card-content"></div>
-                </div>
-
-                <div class="card">
-                    <h3>⬆️ Cargas Altas (> 40%)</h3>
-                    <div id="cargasAltas" class="card-content"></div>
-                </div>
-
-                <div class="card">
-                    <h3>⚠️ Cargas Bajas (< 20%)</h3>
-                    <div id="cargasBajas" class="card-content"></div>
-                </div>
+            <!-- HISTORIAL -->
+            <div id="tab-historial" class="tab-content">
+                <h2 style="margin-bottom: 20px;">Histórico</h2>
+                <div id="historial-contenido"></div>
             </div>
         </div>
-
-        <!-- CONTENIDO: CAMPAÑAS -->
-        <div id="campanias" class="content">
-            <div class="grid">
-                <div class="card" style="grid-column: 1 / -1;">
-                    <h3>🎯 Lista Completa de Campañas</h3>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Campaña</th>
-                                    <th>Mensajes</th>
-                                    <th>Gasto</th>
-                                    <th>CPM</th>
-                                    <th>Estado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaCampanias"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- CONTENIDO: ALERTAS -->
-        <div id="alertas" class="content">
-            <div id="alertasContainer"></div>
-        </div>
-
-        <!-- CONTENIDO: CLIENTES -->
-        <div id="clientes" class="content">
-            <div class="grid">
-                <div class="card" style="grid-column: 1 / -1;">
-                    <h3>👥 Rendimiento por Cliente</h3>
-                    <div style="overflow-x: auto;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Cliente</th>
-                                    <th>Campañas</th>
-                                    <th>Mensajes</th>
-                                    <th>Gasto</th>
-                                    <th>CPM Promedio</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tablaClientes"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- FOOTER -->
-    <div class="footer">
-        <p>Sistema Unificado de Informes v1.0 • Actualizado: <span id="ultimaActualizacion">-</span></p>
     </div>
 
     <script>
-        let datosActuales = null;
+        let chartPaneles = null, chartCPM = null;
 
-        // Cargar informe actual al iniciar
-        window.addEventListener('DOMContentLoaded', () => {
-            cargarInformeActual();
-            cargarListaInformes();
-        });
+        function cambiarTab(e, tab) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tab}`).classList.add('active');
+            e.target.classList.add('active');
+            if (tab === 'analisis') cargarAnalisis();
+            if (tab === 'objetivos') cargarObjetivos();
+            if (tab === 'historial') cargarHistorial();
+        }
 
-        async function cargarInformeActual() {
+        async function cargarDatos() {
             try {
-                const response = await fetch('https://accountant-services.co.uk/informe/api/informe-diario');
-                datosActuales = await response.json();
-                
-                if (datosActuales.error) {
-                    console.log('Generando datos...');
-                    return;
-                }
-                
-                actualizarDashboard(datosActuales);
-                document.getElementById('ultimaActualizacion').textContent = 
-                    new Date(datosActuales.fecha).toLocaleString('es-AR');
-            } catch (error) {
-                console.error('Error cargando informe:', error);
-            }
+                const res = await fetch('/api/informe-diario');
+                const datos = await res.json();
+                if (datos && !datos.error) mostrarDiario(datos);
+            } catch (err) { console.error(err); }
         }
 
-        async function cargarListaInformes() {
-            try {
-                const response = await fetch('https://accountant-services.co.uk/informe/api/informes');
-                const informes = await response.json();
-                const select = document.getElementById('selectInforme');
-                
-                informes.forEach(informe => {
-                    const option = document.createElement('option');
-                    option.value = informe.ruta;
-                    option.textContent = `${informe.nombre} (${informe.tipo})`;
-                    select.appendChild(option);
-                });
-                
-                select.addEventListener('change', async (e) => {
-                    if (e.target.value) {
-                        const response = await fetch(`https://accountant-services.co.uk/informe/api/informe/${e.target.value}`);
-                        const datos = await response.json();
-                        datosActuales = datos;
-                        actualizarDashboard(datos);
-                    }
-                });
-            } catch (error) {
-                console.error('Error cargando lista:', error);
-            }
-        }
+        function mostrarDiario(datos) {
+            const fecha = new Date(datos.fecha);
+            document.getElementById('fechaActual').textContent = fecha.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
-        function actualizarDashboard(datos) {
-            // Header stats
-            document.getElementById('totalPaneles').textContent = datos.resumen.totalPaneles;
-            document.getElementById('totalCampanias').textContent = datos.resumen.totalCampanias;
-            document.getElementById('totalMensajes').textContent = datos.resumen.totalMensajes;
-            document.getElementById('cpmPromedio').textContent = `$${datos.resumen.CPMPromedio}`;
+            const r = datos.resumen;
+            const resumenHTML = `
+                <div class="resumen-grid">
+                    <div class="card"><h3>Paneles</h3><div class="valor">${r.totalPaneles}</div></div>
+                    <div class="card"><h3>Mensajes</h3><div class="valor">${r.totalMensajes.toLocaleString()}</div></div>
+                    <div class="card"><h3>Gasto</h3><div class="valor">$${r.totalGasto.toFixed(2)}</div></div>
+                    <div class="card ${r.cpmPromedio > 1.20 ? 'warning' : r.cpmPromedio < 0.80 ? 'success' : 'danger'}"><h3>CPM</h3><div class="valor">$${r.cpmPromedio.toFixed(2)}</div></div>
+                    <div class="card success"><h3>✅ Objetivo</h3><div class="valor">${r.panelesAltoObjetivo.length}</div></div>
+                    <div class="card danger"><h3>❌ Objetivo</h3><div class="valor">${r.panelesBajosObjetivo.length}</div></div>
+                </div>
+            `;
+            document.getElementById('resumen-diario').innerHTML = resumenHTML;
 
-            // Resumen
-            document.getElementById('res-totalPaneles').textContent = datos.resumen.totalPaneles;
-            document.getElementById('res-totalCampanias').textContent = datos.resumen.totalCampanias;
-            document.getElementById('res-totalMensajes').textContent = datos.resumen.totalMensajes;
-            document.getElementById('res-totalGasto').textContent = `$${datos.resumen.totalGasto.toFixed(2)}`;
-            document.getElementById('res-cpmPromedio').textContent = `$${datos.resumen.CPMPromedio}`;
-
-            // Top campañas
-            const topCampanias = datos.campanias.slice(0, 5);
-            document.getElementById('topCampanias').innerHTML = topCampanias
-                .map(c => `
-                    <div class="campaign-item">
-                        <div class="campaign-name">${c.nombre}</div>
-                        <div class="campaign-stats">
-                            <div class="stat"><span>${c.mensajes}</span> <span class="stat-value">msj</span></div>
-                            <div class="stat">$<span class="stat-value">${c.cpm.toFixed(4)}</span></div>
-                            <span class="badge ${c.cpm < 0.80 ? 'badge-success' : 'badge-danger'}">${c.cliente}</span>
-                        </div>
-                    </div>
-                `).join('');
-
-            // Alertas CPM
-            document.getElementById('resumenAlertasCPM').innerHTML = 
-                `<strong>${datos.resumen.campaniasCPMAltoCosto}</strong> campañas con CPM alto`;
-
-            // Paneles
-            actualizarTablaPaneles(datos.paneles);
-            actualizarPanelesBajos(datos.resumen.panelesBajos);
-            actualizarCargasAltas(datos.resumen.panelesCargaAlta);
-            actualizarCargasBajas(datos.resumen.panelesCargaBaja);
-
-            // Campañas
-            actualizarTablaCampanias(datos.campanias);
-
-            // Alertas
-            actualizarAlertas(datos.resumen);
-
-            // Clientes
-            actualizarTablaClientes(datos.campanias);
-        }
-
-        function actualizarTablaPaneles(paneles) {
-            const tbody = document.getElementById('tablapaneles');
-            tbody.innerHTML = paneles
-                .sort((a, b) => b.totalMensajes - a.totalMensajes)
-                .map(p => {
-                    let estado = 'badge-success';
-                    if (p.totalMensajes < 100) estado = 'badge-warning';
-                    if (p.totalMensajes === 0) estado = 'badge-danger';
-                    
-                    return `
-                        <tr>
-                            <td>${p.nombre}</td>
-                            <td>${p.totalMensajes}</td>
-                            <td>${p.cargas}</td>
-                            <td>${p.porcentajeCarga.toFixed(1)}%</td>
-                            <td><span class="badge ${estado}">${p.totalMensajes > 0 ? 'Activo' : 'Sin datos'}</span></td>
-                        </tr>
-                    `;
-                }).join('');
-        }
-
-        function actualizarPanelesBajos(panelesBajos) {
-            const container = document.getElementById('panelesBajos');
-            container.innerHTML = panelesBajos
+            const tablaHTML = Object.values(datos.paneles)
                 .sort((a, b) => b.mensajes - a.mensajes)
-                .map((p, i) => `
-                    <div class="ranking-item">
-                        <div class="ranking-number">${i + 1}</div>
-                        <div class="ranking-name">${p.nombre}</div>
-                        <div class="ranking-value">${p.mensajes} msg</div>
-                    </div>
-                `).join('') || '<p>✓ Sin paneles bajos</p>';
-        }
+                .map(p => `<tr>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>${p.mensajes}</td>
+                    <td>${p.objetivo}</td>
+                    <td>${p.objetivo > 0 ? ((p.mensajes / p.objetivo) * 100).toFixed(0) : 'N/A'}%</td>
+                    <td><span class="status-badge ${p.llega ? 'status-ok' : 'status-fail'}">${p.llega ? '✅' : '❌'}</span></td>
+                    <td>${p.porcentajeCarga.toFixed(1)}%</td>
+                </tr>`).join('');
+            document.getElementById('tbody-paneles').innerHTML = tablaHTML;
 
-        function actualizarCargasAltas(cargasAltas) {
-            const container = document.getElementById('cargasAltas');
-            container.innerHTML = cargasAltas
-                .sort((a, b) => b.porcentaje - a.porcentaje)
-                .map((p, i) => `
-                    <div class="ranking-item">
-                        <div class="ranking-number">${i + 1}</div>
-                        <div class="ranking-name">${p.nombre}</div>
-                        <div class="ranking-value">${p.porcentaje.toFixed(1)}%</div>
-                    </div>
-                `).join('') || '<p>✓ Sin cargas altas</p>';
-        }
-
-        function actualizarCargasBajas(cargasBajas) {
-            const container = document.getElementById('cargasBajas');
-            container.innerHTML = cargasBajas
-                .sort((a, b) => a.porcentaje - b.porcentaje)
-                .map((p, i) => `
-                    <div class="ranking-item">
-                        <div class="ranking-number">${i + 1}</div>
-                        <div class="ranking-name">${p.nombre}</div>
-                        <div class="ranking-value">${p.porcentaje.toFixed(1)}%</div>
-                    </div>
-                `).join('') || '<p>✓ Sin cargas bajas</p>';
-        }
-
-        function actualizarTablaCampanias(campanias) {
-            const tbody = document.getElementById('tablaCampanias');
-            tbody.innerHTML = campanias.map(c => `
-                <tr>
-                    <td>${c.cliente}</td>
-                    <td>${c.nombre}</td>
+            const mejoresHTML = datos.mejoresCampanias.slice(0, 8)
+                .map(c => `<tr>
+                    <td><strong>${c.nombre}</strong></td>
                     <td>${c.mensajes}</td>
                     <td>$${c.gasto.toFixed(2)}</td>
-                    <td>
-                        <span class="badge ${c.cpm < 0.80 ? 'badge-success' : 'badge-danger'}">
-                            $${c.cpm.toFixed(4)}
-                        </span>
-                    </td>
-                    <td><span class="badge ${c.estado === 'ACTIVE' ? 'badge-info' : 'badge-warning'}">${c.estado}</span></td>
-                </tr>
-            `).join('');
+                    <td><strong style="color: ${c.cpm < 0.80 ? '#10b981' : c.cpm < 1.20 ? '#f59e0b' : '#ef4444'}">$${c.cpm.toFixed(2)}</strong></td>
+                </tr>`).join('');
+            document.getElementById('tbody-mejores').innerHTML = mejoresHTML;
+
+            crearGraficos(datos);
         }
 
-        function actualizarTablaClientes(campanias) {
-            const clientesMap = {};
-            
-            campanias.forEach(c => {
-                if (!clientesMap[c.cliente]) {
-                    clientesMap[c.cliente] = {
-                        cliente: c.cliente,
-                        campanias: 0,
-                        mensajes: 0,
-                        gasto: 0
-                    };
-                }
-                clientesMap[c.cliente].campanias++;
-                clientesMap[c.cliente].mensajes += c.mensajes;
-                clientesMap[c.cliente].gasto += c.gasto;
+        function crearGraficos(datos) {
+            const paneles = Object.values(datos.paneles).sort((a, b) => b.mensajes - a.mensajes).slice(0, 10);
+            const labels = paneles.map(p => p.nombre);
+
+            const ctxP = document.getElementById('chartPaneles').getContext('2d');
+            if (chartPaneles) chartPaneles.destroy();
+            chartPaneles = new Chart(ctxP, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Mensajes', data: paneles.map(p => p.mensajes), backgroundColor: '#667eea', borderRadius: 4 },
+                        { label: 'Objetivo', data: paneles.map(p => p.objetivo), backgroundColor: '#cbd5e0', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
             });
-            
-            const clientes = Object.values(clientesMap)
-                .sort((a, b) => b.mensajes - a.mensajes);
-            
-            const tbody = document.getElementById('tablaClientes');
-            tbody.innerHTML = clientes.map(c => {
-                const cpmPromedio = (c.gasto / c.mensajes).toFixed(4);
-                return `
-                    <tr>
-                        <td>${c.cliente}</td>
-                        <td>${c.campanias}</td>
-                        <td>${c.mensajes}</td>
-                        <td>$${c.gasto.toFixed(2)}</td>
-                        <td><span class="badge ${cpmPromedio < 0.80 ? 'badge-success' : 'badge-danger'}">$${cpmPromedio}</span></td>
-                    </tr>
-                `;
-            }).join('');
+
+            const campanias = datos.mejoresCampanias.slice(0, 8);
+            const ctxC = document.getElementById('chartCPM').getContext('2d');
+            if (chartCPM) chartCPM.destroy();
+            chartCPM = new Chart(ctxC, {
+                type: 'bar',
+                indexAxis: 'y',
+                data: {
+                    labels: campanias.map(c => c.nombre.substring(0, 20)),
+                    datasets: [{
+                        label: 'CPM',
+                        data: campanias.map(c => c.cpm),
+                        backgroundColor: campanias.map(c => c.cpm < 0.80 ? '#10b981' : c.cpm < 1.20 ? '#f59e0b' : '#ef4444'),
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
         }
 
-        function actualizarAlertas(resumen) {
-            const container = document.getElementById('alertasContainer');
-            let html = '';
-            
-            if (resumen.panelesBajos.length > 0) {
-                html += `
-                    <div class="alert alert-warning">
-                        ⚠️ <strong>${resumen.panelesBajos.length}</strong> paneles con menos de 100 mensajes
-                    </div>
-                `;
+        async function cargarAnalisis() {
+            const res = await fetch('/api/analisis');
+            const analisis = await res.json();
+            let html = '<div>';
+            if (analisis.panelesBajosMensajes?.length) {
+                html += `<div class="alert alert-danger"><h3>⚠️ Paneles < 100 msgs</h3><ul>${analisis.panelesBajosMensajes.map(p => `<li>${p.nombre}: ${p.mensajes}</li>`).join('')}</ul></div>`;
             }
-            
-            if (resumen.campaniasCPMAltoCosto > 0) {
-                html += `
-                    <div class="alert alert-danger">
-                        🔴 <strong>${resumen.campaniasCPMAltoCosto}</strong> campañas con CPM > $0.80
-                    </div>
-                `;
+            if (analisis.campaniasCPMAlto?.length) {
+                html += `<div class="alert alert-warning"><h3>⚠️ CPM > $1.20</h3><ul>${analisis.campaniasCPMAlto.map(c => `<li>${c.nombre}: $${c.cpm.toFixed(2)}</li>`).join('')}</ul></div>`;
             }
-            
-            if (resumen.panelesCargaBaja.length > 0) {
-                html += `
-                    <div class="alert alert-warning">
-                        📉 <strong>${resumen.panelesCargaBaja.length}</strong> paneles con carga < 20%
-                    </div>
-                `;
+            if (analisis.panelesCargaBaja?.length) {
+                html += `<div class="alert alert-warning"><h3>⚠️ % Carga < 20%</h3><ul>${analisis.panelesCargaBaja.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
             }
-            
-            if (resumen.panelesCargaAlta.length > 0) {
-                html += `
-                    <div class="alert alert-info">
-                        📈 <strong>${resumen.panelesCargaAlta.length}</strong> paneles con carga > 40%
-                    </div>
-                `;
+            if (analisis.panelesCargaAlta?.length) {
+                html += `<div class="alert alert-warning"><h3>✋ % Carga > 40%</h3><ul>${analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
             }
-            
-            if (!html) {
-                html = '<div class="alert alert-success">✓ Todo en orden - No hay alertas</div>';
-            }
-            
-            container.innerHTML = html;
+            html += '</div>';
+            document.getElementById('analisis-contenido').innerHTML = html;
         }
 
-        function cambiarTab(btn, tabId) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-            
-            btn.classList.add('active');
-            document.getElementById(tabId).classList.add('active');
+        async function cargarObjetivos() {
+            const res = await fetch('/api/objetivos');
+            const obj = await res.json();
+            const html = Object.entries(obj).map(([panel, valor]) => 
+                `<div class="form-group"><label>${panel}</label><input type="number" id="obj-${panel}" value="${valor}" min="0"></div>`
+            ).join('');
+            document.getElementById('form-objetivos').innerHTML = html;
         }
 
-        function exportarJSON() {
-            if (!datosActuales) {
-                alert('No hay datos para exportar');
-                return;
+        async function guardarObjetivos() {
+            const obj = {};
+            document.querySelectorAll('#form-objetivos .form-group').forEach(group => {
+                obj[group.querySelector('label').textContent] = parseInt(group.querySelector('input').value) || 0;
+            });
+            const res = await fetch('/api/objetivos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(obj) });
+            if ((await res.json()).success) {
+                alert('✅ Guardado');
+                cargarDatos();
             }
-            
-            const dataStr = JSON.stringify(datosActuales, null, 2);
-            const blob = new Blob([dataStr], { type: 'application/json' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `informe_${new Date().toISOString().split('T')[0]}.json`;
-            a.click();
         }
+
+        async function cargarHistorial() {
+            const res = await fetch('/api/historial');
+            const hist = await res.json();
+            const html = hist.length ? `<table><thead><tr><th>Fecha</th><th>Acción</th></tr></thead><tbody>${hist.map(h => `<tr><td>${h.fecha}</td><td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;">Ver</button></td></tr>`).join('')}</tbody></table>` : '<p>Sin historial</p>';
+            document.getElementById('historial-contenido').innerHTML = html;
+        }
+
+        cargarDatos();
+        setInterval(cargarDatos, 300000);
     </script>
 </body>
 </html>
