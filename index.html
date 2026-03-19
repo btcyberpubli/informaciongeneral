@@ -276,6 +276,7 @@
 
         <div class="tabs">
             <button class="tab-btn active" onclick="cambiarTab(event, 'diario')">📈 Diario</button>
+            <button class="tab-btn" onclick="cambiarTab(event, 'semanal')">📊 Semanal</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'analisis')">🔍 Análisis</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'objetivos')">🎯 Objetivos</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'historial')">📅 Historial</button>
@@ -313,6 +314,31 @@
                 </p>
             </div>
 
+            <!-- SEMANAL -->
+            <div id="tab-semanal" class="tab-content">
+                <div id="resumen-semanal"></div>
+                <div class="charts-grid">
+                    <div class="chart-container">
+                        <h3>📊 Mensajes Diarios (Promedio)</h3>
+                        <div class="chart-wrapper"><canvas id="chartSemanalMensajes"></canvas></div>
+                    </div>
+                    <div class="chart-container">
+                        <h3>💰 Gasto Diarios (Promedio)</h3>
+                        <div class="chart-wrapper"><canvas id="chartSemanalGasto"></canvas></div>
+                    </div>
+                </div>
+                <h2 style="margin-top: 40px; margin-bottom: 20px;">Rendimiento de Paneles (Última Semana)</h2>
+                <table id="tabla-paneles-semanal">
+                    <thead><tr><th>Panel</th><th>Total Mensajes</th><th>Promedio/día</th><th>Objetivo Total</th><th>% Éxito</th></tr></thead>
+                    <tbody id="tbody-paneles-semanal"></tbody>
+                </table>
+                <h2 style="margin-top: 40px; margin-bottom: 20px;">Top Campañas Semanales</h2>
+                <table id="tabla-campanias-semanal">
+                    <thead><tr><th>Imagen</th><th>Campaña</th><th>Cliente</th><th>Total Msgs</th><th>Gasto</th><th>CPM Promedio</th><th>Días Activa</th></tr></thead>
+                    <tbody id="tbody-campanias-semanal"></tbody>
+                </table>
+            </div>
+
             <!-- ANÁLISIS -->
             <div id="tab-analisis" class="tab-content">
                 <div id="analisis-contenido"></div>
@@ -345,6 +371,7 @@
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tab}`).classList.add('active');
             e.target.classList.add('active');
+            if (tab === 'semanal') cargarSemanal();
             if (tab === 'analisis') cargarAnalisis();
             if (tab === 'objetivos') cargarObjetivos();
             if (tab === 'historial') cargarHistorial();
@@ -480,6 +507,90 @@
                 alert('✅ Guardado');
                 cargarDatos();
             }
+        }
+
+        async function cargarSemanal() {
+            try {
+                const res = await fetch(`${API_BASE}/api/informe-semanal`);
+                const semanal = await res.json();
+                if (semanal && !semanal.error) mostrarSemanal(semanal);
+            } catch (err) { console.error(err); }
+        }
+
+        function mostrarSemanal(semanal) {
+            const r = semanal.resumen;
+            const resumenHTML = `
+                <div class="resumen-grid">
+                    <div class="card"><h3>Días</h3><div class="valor">${semanal.diasIncluidos}</div></div>
+                    <div class="card"><h3>Total Mensajes</h3><div class="valor">${r.totalMensajesSemanal.toLocaleString()}</div></div>
+                    <div class="card"><h3>Promedio/día</h3><div class="valor">${r.promedioDiario.mensajes.toLocaleString()}</div></div>
+                    <div class="card"><h3>Total Gasto</h3><div class="valor">$${r.totalGastoSemanal.toFixed(2)}</div></div>
+                    <div class="card"><h3>CPM Semanal</h3><div class="valor">$${r.cpmSemanal.toFixed(2)}</div></div>
+                </div>
+            `;
+            document.getElementById('resumen-semanal').innerHTML = resumenHTML;
+
+            // Tabla de paneles
+            const tablapanelesHTML = semanal.paneles
+                .map(p => `<tr>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>${p.totalMensajes.toLocaleString()}</td>
+                    <td>${p.promedioMensajes}</td>
+                    <td>${p.totalObjetivo}</td>
+                    <td><span class="status-badge status-${p.tasaExito >= 80 ? 'ok' : p.tasaExito >= 50 ? 'warn' : 'fail'}">${p.tasaExito.toFixed(1)}%</span></td>
+                </tr>`).join('');
+            document.getElementById('tbody-paneles-semanal').innerHTML = tablapanelesHTML;
+
+            // Tabla de campañas
+            const tablacampaniasHTML = semanal.campanias
+                .slice(0, 15)
+                .map(c => `<tr>
+                    <td><img src="${c.imagenes?.image_url || 'https://via.placeholder.com/50'}" alt="${c.nombre}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;"></td>
+                    <td><strong>${c.nombre}</strong></td>
+                    <td>${c.cliente}</td>
+                    <td>${c.totalMensajes.toLocaleString()}</td>
+                    <td>$${c.totalGasto.toFixed(2)}</td>
+                    <td><strong style="color: ${c.cpm < 0.80 ? '#10b981' : c.cpm < 1.20 ? '#f59e0b' : '#ef4444'}">$${c.cpm.toFixed(2)}</strong></td>
+                    <td>${c.diasActiva}</td>
+                </tr>`).join('');
+            document.getElementById('tbody-campanias-semanal').innerHTML = tablacampaniasHTML;
+
+            crearGraficosSemanal(semanal);
+        }
+
+        let chartSemanalMensajes = null, chartSemanalGasto = null;
+        function crearGraficosSemanal(semanal) {
+            const r = semanal.resumen;
+            
+            const ctxM = document.getElementById('chartSemanalMensajes').getContext('2d');
+            if (chartSemanalMensajes) chartSemanalMensajes.destroy();
+            chartSemanalMensajes = new Chart(ctxM, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Promedio/día', 'Meta restante'],
+                    datasets: [{
+                        data: [r.promedioDiario.mensajes, 1000 - r.promedioDiario.mensajes],
+                        backgroundColor: ['#667eea', '#e0e0e0'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
+
+            const ctxG = document.getElementById('chartSemanalGasto').getContext('2d');
+            if (chartSemanalGasto) chartSemanalGasto.destroy();
+            chartSemanalGasto = new Chart(ctxG, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Gastado', 'Presupuesto restante'],
+                    datasets: [{
+                        data: [Math.round(r.promedioDiario.gasto), 500 - Math.round(r.promedioDiario.gasto)],
+                        backgroundColor: ['#f59e0b', '#e0e0e0'],
+                        borderRadius: 4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+            });
         }
 
         async function cargarHistorial() {
