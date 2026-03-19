@@ -300,11 +300,17 @@
                     <thead><tr><th>Panel</th><th>Mensajes</th><th>Objetivo</th><th>%</th><th>Status</th><th>% Carga</th></tr></thead>
                     <tbody id="tbody-paneles"></tbody>
                 </table>
-                <h2 style="margin-bottom: 20px;">Mejores Campañas</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0;">Mejores Campañas (<span id="total-campanias">0</span>)</h2>
+                    <button class="btn btn-primary" onclick="cargarDatos(true)" style="padding: 8px 16px; font-size: 0.9em;">🔄 Actualizar</button>
+                </div>
                 <table>
-                    <thead><tr><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th></tr></thead>
+                    <thead><tr><th>Imagen</th><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th><th>Estado</th></tr></thead>
                     <tbody id="tbody-mejores"></tbody>
                 </table>
+                <p style="font-size: 0.85em; color: #666; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                    💾 <strong>Backups automáticos:</strong> Se crean diariamente cada vez que se actualiza el dashboard. Los reportes se guardan en `/info/info/historial/`
+                </p>
             </div>
 
             <!-- ANÁLISIS -->
@@ -381,14 +387,19 @@
                 </tr>`).join('');
             document.getElementById('tbody-paneles').innerHTML = tablaHTML;
 
-            const mejoresHTML = datos.mejoresCampanias.slice(0, 8)
+            const mejoresHTML = datos.mejoresCampanias
+                .sort((a, b) => a.cpm - b.cpm)
+                .slice(0, 10)
                 .map(c => `<tr>
+                    <td><img src="${c.imagenes?.image_url || 'https://via.placeholder.com/50'}" alt="${c.nombre}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;"></td>
                     <td><strong>${c.nombre}</strong></td>
                     <td>${c.mensajes}</td>
                     <td>$${c.gasto.toFixed(2)}</td>
                     <td><strong style="color: ${c.cpm < 0.80 ? '#10b981' : c.cpm < 1.20 ? '#f59e0b' : '#ef4444'}">$${c.cpm.toFixed(2)}</strong></td>
+                    <td><span class="status-badge status-${c.estado === 'ACTIVE' ? 'ok' : 'fail'}">${c.estado}</span></td>
                 </tr>`).join('');
             document.getElementById('tbody-mejores').innerHTML = mejoresHTML;
+            document.getElementById('total-campanias').textContent = datos.campanias.length;
 
             crearGraficos(datos);
         }
