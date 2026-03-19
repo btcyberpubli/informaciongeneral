@@ -388,7 +388,7 @@
             document.getElementById('tbody-paneles').innerHTML = tablaHTML;
 
             const mejoresHTML = datos.mejoresCampanias
-                .sort((a, b) => a.cpm - b.cpm)
+                .sort((a, b) => b.mensajes - a.mensajes)
                 .slice(0, 10)
                 .map(c => `<tr>
                     <td><img src="${c.imagenes?.image_url || 'https://via.placeholder.com/50'}" alt="${c.nombre}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;"></td>
@@ -396,7 +396,7 @@
                     <td>${c.mensajes}</td>
                     <td>$${c.gasto.toFixed(2)}</td>
                     <td><strong style="color: ${c.cpm < 0.80 ? '#10b981' : c.cpm < 1.20 ? '#f59e0b' : '#ef4444'}">$${c.cpm.toFixed(2)}</strong></td>
-                    <td><span class="status-badge status-${c.estado === 'ACTIVE' ? 'ok' : 'fail'}">${c.estado}</span></td>
+                    <td><span class="status-badge status-${c.mensajes >= c.objetivo ? 'ok' : 'fail'}">${c.mensajes >= c.objetivo ? '✅ Llegó' : '❌ No llegó'}</span></td>
                 </tr>`).join('');
             document.getElementById('tbody-mejores').innerHTML = mejoresHTML;
             document.getElementById('total-campanias').textContent = datos.campanias.length;
