@@ -387,6 +387,7 @@
 
         function mostrarDiario(datos) {
             const fecha = new Date(datos.fecha);
+            fecha.setDate(fecha.getDate() - 1);
             document.getElementById('fechaActual').textContent = fecha.toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
             const r = datos.resumen;
