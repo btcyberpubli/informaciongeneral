@@ -762,7 +762,7 @@
                 html += `<details style="margin-bottom:12px; border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.06);">
                     <summary style="padding:14px 20px; background:white; cursor:pointer; font-weight:700; font-size:1.05em; color:#2563eb; list-style:none; display:flex; align-items:center; gap:8px; user-select:none; border-left:4px solid #2563eb;">
                         👤 ${grupo.nombre}
-                        <span style="margin-left:auto; font-size:0.8em; color:#999; font-weight:400;">${grupo.paginas.length} página${grupo.paginas.length !== 1 ? 's' : ''}${grupo.bms?.length ? ` · ${grupo.bms.length} BM` : ''}</span>
+                        <span style="margin-left:auto; font-size:0.8em; color:#999; font-weight:400;">${grupo.paginas.length} página${grupo.paginas.length !== 1 ? 's' : ''}</span>
                     </summary>
                     <div style="padding:20px;">`;
 
@@ -795,31 +795,6 @@
                 });
                 html += `</tbody></table></div></details>`;
 
-                // Sub-desplegable BMs
-                if (grupo.bms && grupo.bms.length) {
-                    html += `<details style="border:1px solid #dbeafe; border-radius:7px; overflow:hidden;">
-                        <summary style="padding:10px 16px; background:#eff6ff; cursor:pointer; font-weight:600; font-size:0.88em; color:#1e40af; list-style:none; display:flex; align-items:center; gap:6px; user-select:none; text-transform:uppercase; letter-spacing:0.4px;">
-                            🏢 Business Managers <span style="margin-left:auto; font-size:0.85em; color:#999; font-weight:400;">${grupo.bms.length}</span>
-                        </summary>
-                        <div style="overflow-x:auto;">
-                        <table style="margin-bottom:0;"><thead><tr>
-                            <th>BM</th><th>Verificado</th><th>WhatsApp</th><th>Teléfono</th><th>Último uso WA</th>
-                        </tr></thead><tbody>`;
-                    grupo.bms.forEach(bm => {
-                        const verificadoBadge = bm.verificado === 'verified'
-                            ? `<span class="status-badge status-ok">✅ Verificado</span>`
-                            : `<span class="status-badge status-fail">❌ No verificado</span>`;
-                        html += `<tr>
-                            <td><strong>${bm.nombre || '-'}</strong></td>
-                            <td>${verificadoBadge}</td>
-                            <td>${bm.waNombre || '-'}</td>
-                            <td>${bm.waTelefono || '-'}</td>
-                            <td style="font-size:0.85em">${bm.waUltimoUso || '-'}</td>
-                        </tr>`;
-                    });
-                    html += `</tbody></table></div></details>`;
-                }
-
                 html += `</div></details>`;
             });
             document.getElementById('paginas-contenido').innerHTML = html;
@@ -828,8 +803,16 @@
         async function cargarHistorial() {
             const res = await fetch(`${API_BASE}/api/historial`);
             const hist = await res.json();
+            // Ordenar descendente por fecha real (DD-MM-YYYY → comparable)
+            hist.sort((a, b) => {
+                const [da, ma, ya] = a.fecha.split('-');
+                const [db, mb, yb] = b.fecha.split('-');
+                return new Date(`${yb}-${mb}-${db}`) - new Date(`${ya}-${ma}-${da}`);
+            });
+            // Mostrar como MM-DD-YYYY para que queden agrupados por mes
+            const fmt = f => { const [d, m, y] = f.split('-'); return `${m}-${d}-${y}`; };
             const html = hist.length
-                ? `<table><thead><tr><th>Fecha</th><th>Acción</th></tr></thead><tbody>${hist.map(h => `<tr><td>${h.fecha}</td><td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="verHistorial('${h.fecha}')">Ver</button></td></tr>`).join('')}</tbody></table>`
+                ? `<table><thead><tr><th>Fecha</th><th>Acción</th></tr></thead><tbody>${hist.map(h => `<tr><td>${fmt(h.fecha)}</td><td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="verHistorial('${h.fecha}')">Ver</button></td></tr>`).join('')}</tbody></table>`
                 : '<p>Sin historial</p>';
             document.getElementById('historial-contenido').innerHTML = html;
         }
