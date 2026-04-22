@@ -259,6 +259,45 @@
 
         h2 { color: #333; font-size: 1.3em; }
 
+        /* Modal historial */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .modal-overlay.open { display: block; }
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 30px;
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        .modal-header h2 { font-size: 1.5em; margin: 0; }
+        .modal-close {
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
         @media (max-width: 768px) {
             header h1 { font-size: 1.8em; }
             .charts-grid { grid-template-columns: 1fr; }
@@ -277,16 +316,31 @@
         <div class="tabs">
             <button class="tab-btn active" onclick="cambiarTab(event, 'diario')">📈 Diario</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'semanal')">📊 Semanal</button>
-            <button class="tab-btn" onclick="cambiarTab(event, 'analisis')">🔍 Análisis</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'objetivos')">🎯 Objetivos</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'historial')">📅 Historial</button>
+            <button class="tab-btn" onclick="cambiarTab(event, 'paginas')">📄 Páginas</button>
         </div>
 
         <div class="content">
             <!-- DIARIO -->
             <div id="tab-diario" class="tab-content active">
                 <div id="resumen-diario"></div>
-                <div class="charts-grid">
+                <h2 style="margin-top: 10px; margin-bottom: 20px;">🔍 Análisis del Día</h2>
+                <div id="analisis-diario"><p style="color:#999">Cargando análisis...</p></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; margin-top: 40px;">
+                    <h2 style="margin: 0;">Mejores Campañas (<span id="total-campanias">0</span>)</h2>
+                    <button class="btn btn-primary" onclick="cargarDatos(true)" style="padding: 8px 16px; font-size: 0.9em;">🔄 Actualizar</button>
+                </div>
+                <table>
+                    <thead><tr><th>Imagen</th><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th><th>Estado</th></tr></thead>
+                    <tbody id="tbody-mejores"></tbody>
+                </table>
+                <h2 style="margin-top: 40px; margin-bottom: 20px;">Rendimiento por Panel</h2>
+                <table id="tabla-paneles">
+                    <thead><tr><th>Panel</th><th>Mensajes</th><th>Objetivo</th><th>%</th><th>Status</th><th>% Carga</th></tr></thead>
+                    <tbody id="tbody-paneles"></tbody>
+                </table>
+                <div class="charts-grid" style="margin-top: 40px;">
                     <div class="chart-container">
                         <h3>📊 Mensajes por Panel</h3>
                         <div class="chart-wrapper"><canvas id="chartPaneles"></canvas></div>
@@ -296,22 +350,6 @@
                         <div class="chart-wrapper"><canvas id="chartCPM"></canvas></div>
                     </div>
                 </div>
-                <h2 style="margin-top: 40px; margin-bottom: 20px;">Rendimiento por Panel</h2>
-                <table id="tabla-paneles">
-                    <thead><tr><th>Panel</th><th>Mensajes</th><th>Objetivo</th><th>%</th><th>Status</th><th>% Carga</th></tr></thead>
-                    <tbody id="tbody-paneles"></tbody>
-                </table>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="margin: 0;">Mejores Campañas (<span id="total-campanias">0</span>)</h2>
-                    <button class="btn btn-primary" onclick="cargarDatos(true)" style="padding: 8px 16px; font-size: 0.9em;">🔄 Actualizar</button>
-                </div>
-                <table>
-                    <thead><tr><th>Imagen</th><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th><th>Estado</th></tr></thead>
-                    <tbody id="tbody-mejores"></tbody>
-                </table>
-                <p style="font-size: 0.85em; color: #666; margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                    💾 <strong>Backups automáticos:</strong> Se crean diariamente cada vez que se actualiza el dashboard. Los reportes se guardan en `/info/info/historial/`
-                </p>
             </div>
 
             <!-- SEMANAL -->
@@ -334,18 +372,14 @@
                 </table>
                 <h2 style="margin-top: 40px; margin-bottom: 20px;">Top Campañas Semanales</h2>
                 <table id="tabla-campanias-semanal">
-                    <thead><tr><th>Imagen</th><th>Campaña</th><th>Cliente</th><th>Total Msgs</th><th>Gasto</th><th>CPM Promedio</th><th>Días Activa</th></tr></thead>
+                    <thead><tr><th>Campaña</th><th>Cliente</th><th>Total Msgs</th><th>Gasto</th><th>CPM Promedio</th><th>Días Activa</th></tr></thead>
                     <tbody id="tbody-campanias-semanal"></tbody>
                 </table>
             </div>
 
-            <!-- ANÁLISIS -->
-            <div id="tab-analisis" class="tab-content">
-                <div id="analisis-contenido"></div>
-            </div>
-
             <!-- OBJETIVOS -->
             <div id="tab-objetivos" class="tab-content">
+                <div id="objetivos-aviso"></div>
                 <div class="objetivos-form">
                     <h2 style="margin-bottom: 20px;">Editar Objetivos</h2>
                     <div class="form-grid" id="form-objetivos"></div>
@@ -353,10 +387,49 @@
                 </div>
             </div>
 
+            <!-- PÁGINAS -->
+            <div id="tab-paginas" class="tab-content">
+                <h2 style="margin-bottom: 20px;">📄 Páginas Facebook</h2>
+                <div id="paginas-contenido"><p style="color:#999">Cargando...</p></div>
+            </div>
+
             <!-- HISTORIAL -->
             <div id="tab-historial" class="tab-content">
                 <h2 style="margin-bottom: 20px;">Histórico</h2>
                 <div id="historial-contenido"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIAL -->
+    <div id="modal-historial" class="modal-overlay" onclick="cerrarModal(event)">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h2 id="modal-titulo">📅 Informe del día</h2>
+                <button class="modal-close" onclick="document.getElementById('modal-historial').classList.remove('open')">✕ Cerrar</button>
+            </div>
+            <div id="modal-resumen"></div>
+            <h2 style="margin-top:10px; margin-bottom:20px;">🔍 Análisis del Día</h2>
+            <div id="modal-analisis"></div>
+            <h2 style="margin-top:40px; margin-bottom:20px;">Mejores Campañas</h2>
+            <table>
+                <thead><tr><th>Imagen</th><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th><th>Estado</th></tr></thead>
+                <tbody id="modal-tbody-mejores"></tbody>
+            </table>
+            <h2 style="margin-top:40px; margin-bottom:20px;">Rendimiento por Panel</h2>
+            <table>
+                <thead><tr><th>Panel</th><th>Mensajes</th><th>Objetivo</th><th>%</th><th>Status</th><th>% Carga</th></tr></thead>
+                <tbody id="modal-tbody-paneles"></tbody>
+            </table>
+            <div class="charts-grid" style="margin-top:40px;">
+                <div class="chart-container">
+                    <h3>📊 Mensajes por Panel</h3>
+                    <div class="chart-wrapper"><canvas id="modalChartPaneles"></canvas></div>
+                </div>
+                <div class="chart-container">
+                    <h3>💰 CPM de Campañas</h3>
+                    <div class="chart-wrapper"><canvas id="modalChartCPM"></canvas></div>
+                </div>
             </div>
         </div>
     </div>
@@ -372,16 +445,16 @@
             document.getElementById(`tab-${tab}`).classList.add('active');
             e.target.classList.add('active');
             if (tab === 'semanal') cargarSemanal();
-            if (tab === 'analisis') cargarAnalisis();
             if (tab === 'objetivos') cargarObjetivos();
             if (tab === 'historial') cargarHistorial();
+            if (tab === 'paginas') cargarPaginas();
         }
 
         async function cargarDatos() {
             try {
                 const res = await fetch(`${API_BASE}/api/informe-diario`);
                 const datos = await res.json();
-                if (datos && !datos.error) mostrarDiario(datos);
+                if (datos && !datos.error) { mostrarDiario(datos); cargarAnalisis(); }
             } catch (err) { console.error(err); }
         }
 
@@ -486,15 +559,40 @@
                 html += `<div class="alert alert-warning"><h3>✋ % Carga > 40%</h3><ul>${analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
             }
             html += '</div>';
-            document.getElementById('analisis-contenido').innerHTML = html;
+            document.getElementById('analisis-diario').innerHTML = html;
         }
 
         async function cargarObjetivos() {
-            const res = await fetch(`${API_BASE}/api/objetivos`);
-            const obj = await res.json();
-            const html = Object.entries(obj).map(([panel, valor]) => 
-                `<div class="form-group"><label>${panel}</label><input type="number" id="obj-${panel}" value="${valor}" min="0"></div>`
-            ).join('');
+            const [resObj, resDiario] = await Promise.all([
+                fetch(`${API_BASE}/api/objetivos`),
+                fetch(`${API_BASE}/api/informe-diario`)
+            ]);
+            const obj = await resObj.json();
+            const diario = await resDiario.json();
+
+            const panelesDiario = (diario && !diario.error) ? Object.keys(diario.paneles) : [];
+            const nuevosPaneles = panelesDiario.filter(nombre => !(nombre in obj));
+
+            // Agregar los nuevos paneles al objeto con valor 0
+            nuevosPaneles.forEach(nombre => { obj[nombre] = 0; });
+
+            let avisoHTML = '';
+            if (nuevosPaneles.length) {
+                avisoHTML = `<div class="alert alert-warning" style="margin-bottom:20px;">
+                    <h3>⚠️ ${nuevosPaneles.length} panel${nuevosPaneles.length > 1 ? 'es' : ''} nuevo${nuevosPaneles.length > 1 ? 's' : ''} sin objetivo</h3>
+                    <p style="margin-top:8px;">Asigná un objetivo y guardá para registrarlos: <strong>${nuevosPaneles.join(', ')}</strong></p>
+                </div>`;
+            }
+
+            const html = Object.entries(obj).map(([panel, valor]) => {
+                const esNuevo = nuevosPaneles.includes(panel);
+                return `<div class="form-group" style="${esNuevo ? 'border:2px solid #f59e0b; border-radius:6px; padding:8px; background:#fffbeb;' : ''}">
+                    <label>${panel}${esNuevo ? ' <span style="color:#d97706; font-size:0.8em; font-weight:700;">⚠️ NUEVO</span>' : ''}</label>
+                    <input type="number" id="obj-${panel}" value="${valor}" min="0">
+                </div>`;
+            }).join('');
+
+            document.getElementById('objetivos-aviso').innerHTML = avisoHTML;
             document.getElementById('form-objetivos').innerHTML = html;
         }
 
@@ -521,7 +619,7 @@
         function mostrarSemanal(semanal) {
             const r = semanal.resumen;
             const resumenHTML = `
-                <p style="color:#666; margin-bottom:20px; font-size:0.95em;">📅 Del <strong>${semanal.fechaInicio}</strong> al <strong>${semanal.fechaFin}</strong></p>
+                ${semanal.fechaInicio && semanal.fechaFin ? `<p style="color:#666; margin-bottom:20px; font-size:0.95em;">📅 Del <strong>${semanal.fechaInicio}</strong> al <strong>${semanal.fechaFin}</strong></p>` : ''}
                 <div class="resumen-grid">
                     <div class="card"><h3>Días</h3><div class="valor">${semanal.diasIncluidos}</div></div>
                     <div class="card"><h3>Total Mensajes</h3><div class="valor">${r.totalMensajesSemanal.toLocaleString()}</div></div>
@@ -547,7 +645,6 @@
             const tablacampaniasHTML = semanal.campanias
                 .slice(0, 15)
                 .map(c => `<tr>
-                    <td><img src="${c.imagenes?.image_url || 'https://via.placeholder.com/50'}" alt="${c.nombre}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;"></td>
                     <td><strong>${c.nombre}</strong></td>
                     <td>${c.cliente}</td>
                     <td>${c.totalMensajes.toLocaleString()}</td>
@@ -595,11 +692,149 @@
             });
         }
 
+        async function cargarPaginas() {
+            const res = await fetch(`${API_BASE}/api/paginas`);
+            const datos = await res.json();
+            if (datos.error) {
+                document.getElementById('paginas-contenido').innerHTML = `<p style="color:red">Error: ${datos.error}</p>`;
+                return;
+            }
+            let html = '';
+            datos.forEach(grupo => {
+                html += `<h3 style="margin: 30px 0 15px; color:#667eea; font-size:1.1em;">👤 ${grupo.nombre}</h3>`;
+                html += `<table><thead><tr>
+                    <th>Página</th><th>Categoría</th><th>Negocio</th>
+                    <th>Followers</th><th>Fans</th><th>Posts</th>
+                    <th>Imp. hoy</th><th>Reac. hoy</th><th>Imp. 30d</th><th>Reac. 30d</th>
+                    <th>Último post</th>
+                </tr></thead><tbody>`;
+                grupo.paginas.forEach(p => {
+                    const ultimoPost = p.fechaUltimoPost ? new Date(p.fechaUltimoPost).toLocaleDateString('es-AR') : '-';
+                    html += `<tr>
+                        <td><strong>${p.nombre}</strong></td>
+                        <td style="font-size:0.85em;color:#666">${p.categoria || '-'}</td>
+                        <td>${p.negocio || '-'}</td>
+                        <td>${p.followers}</td>
+                        <td>${p.fans}</td>
+                        <td>${p.posteosCount}</td>
+                        <td>${p.impDay}</td>
+                        <td>${p.reacDay}</td>
+                        <td>${p.imp30}</td>
+                        <td>${p.reac30}</td>
+                        <td style="font-size:0.85em">${ultimoPost}</td>
+                    </tr>`;
+                });
+                html += `</tbody></table>`;
+            });
+            document.getElementById('paginas-contenido').innerHTML = html;
+        }
+
         async function cargarHistorial() {
             const res = await fetch(`${API_BASE}/api/historial`);
             const hist = await res.json();
-            const html = hist.length ? `<table><thead><tr><th>Fecha</th><th>Acción</th></tr></thead><tbody>${hist.map(h => `<tr><td>${h.fecha}</td><td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;">Ver</button></td></tr>`).join('')}</tbody></table>` : '<p>Sin historial</p>';
+            const html = hist.length
+                ? `<table><thead><tr><th>Fecha</th><th>Acción</th></tr></thead><tbody>${hist.map(h => `<tr><td>${h.fecha}</td><td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="verHistorial('${h.fecha}')">Ver</button></td></tr>`).join('')}</tbody></table>`
+                : '<p>Sin historial</p>';
             document.getElementById('historial-contenido').innerHTML = html;
+        }
+
+        let modalChartPaneles = null, modalChartCPM = null;
+
+        async function verHistorial(fecha) {
+            document.getElementById('modal-titulo').textContent = `📅 Informe del ${fecha}`;
+            document.getElementById('modal-historial').classList.add('open');
+            document.getElementById('modal-resumen').innerHTML = '<p style="color:#999">Cargando...</p>';
+
+            const res = await fetch(`${API_BASE}/api/historial/${fecha}`);
+            const datos = await res.json();
+            if (datos.error) {
+                document.getElementById('modal-resumen').innerHTML = `<p style="color:red">Error: ${datos.error}</p>`;
+                return;
+            }
+            mostrarEnModal(datos);
+        }
+
+        function mostrarEnModal(datos) {
+            const r = datos.resumen;
+            document.getElementById('modal-resumen').innerHTML = `
+                <div class="resumen-grid">
+                    <div class="card"><h3>Paneles</h3><div class="valor">${r.totalPaneles}</div></div>
+                    <div class="card"><h3>Mensajes</h3><div class="valor">${r.totalMensajes.toLocaleString()}</div></div>
+                    <div class="card"><h3>Gasto</h3><div class="valor">$${r.totalGasto.toFixed(2)}</div></div>
+                    <div class="card ${r.cpmPromedio > 1.20 ? 'warning' : r.cpmPromedio < 0.80 ? 'success' : 'danger'}"><h3>CPM</h3><div class="valor">$${r.cpmPromedio.toFixed(2)}</div></div>
+                    <div class="card success"><h3>✅ Objetivo</h3><div class="valor">${r.panelesAltoObjetivo.length}</div></div>
+                    <div class="card danger"><h3>❌ Objetivo</h3><div class="valor">${r.panelesBajosObjetivo.length}</div></div>
+                </div>`;
+
+            // Análisis
+            let analisisHTML = '<div>';
+            if (datos.analisis?.panelesBajosMensajes?.length)
+                analisisHTML += `<div class="alert alert-danger"><h3>⚠️ Paneles < 100 msgs</h3><ul>${datos.analisis.panelesBajosMensajes.map(p => `<li>${p.nombre}: ${p.mensajes}</li>`).join('')}</ul></div>`;
+            if (datos.analisis?.campaniasCPMAlto?.length)
+                analisisHTML += `<div class="alert alert-warning"><h3>⚠️ CPM > $1.20</h3><ul>${datos.analisis.campaniasCPMAlto.map(c => `<li>${c.nombre}: $${c.cpm.toFixed(2)}</li>`).join('')}</ul></div>`;
+            if (datos.analisis?.panelesCargaBaja?.length)
+                analisisHTML += `<div class="alert alert-warning"><h3>⚠️ % Carga < 20%</h3><ul>${datos.analisis.panelesCargaBaja.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+            if (datos.analisis?.panelesCargaAlta?.length)
+                analisisHTML += `<div class="alert alert-warning"><h3>✋ % Carga > 40%</h3><ul>${datos.analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+            analisisHTML += '</div>';
+            document.getElementById('modal-analisis').innerHTML = analisisHTML;
+
+            // Tabla campañas
+            document.getElementById('modal-tbody-mejores').innerHTML = datos.mejoresCampanias
+                .sort((a, b) => b.mensajes - a.mensajes).slice(0, 10)
+                .map(c => `<tr>
+                    <td><img src="${c.imagenes?.image_url || 'https://via.placeholder.com/50'}" style="width:50px;height:50px;border-radius:4px;object-fit:cover;"></td>
+                    <td><strong>${c.nombre}</strong></td>
+                    <td>${c.mensajes}</td>
+                    <td>$${c.gasto.toFixed(2)}</td>
+                    <td><strong style="color:${c.cpm < 0.80 ? '#10b981' : c.cpm < 1.20 ? '#f59e0b' : '#ef4444'}">$${c.cpm.toFixed(2)}</strong></td>
+                    <td><span class="status-badge status-${c.mensajes >= c.objetivo ? 'ok' : 'fail'}">${c.mensajes >= c.objetivo ? '✅ Llegó' : '❌ No llegó'}</span></td>
+                </tr>`).join('');
+
+            // Tabla paneles
+            document.getElementById('modal-tbody-paneles').innerHTML = Object.values(datos.paneles)
+                .sort((a, b) => b.mensajes - a.mensajes)
+                .map(p => `<tr>
+                    <td><strong>${p.nombre}</strong></td>
+                    <td>${p.mensajes}</td>
+                    <td>${p.objetivo}</td>
+                    <td>${p.objetivo > 0 ? ((p.mensajes / p.objetivo) * 100).toFixed(0) : 'N/A'}%</td>
+                    <td><span class="status-badge ${p.llega ? 'status-ok' : 'status-fail'}">${p.llega ? '✅' : '❌'}</span></td>
+                    <td>${p.porcentajeCarga.toFixed(1)}%</td>
+                </tr>`).join('');
+
+            // Gráficos
+            const paneles = Object.values(datos.paneles).sort((a, b) => b.mensajes - a.mensajes).slice(0, 10);
+            const ctxP = document.getElementById('modalChartPaneles').getContext('2d');
+            if (modalChartPaneles) modalChartPaneles.destroy();
+            modalChartPaneles = new Chart(ctxP, {
+                type: 'bar',
+                data: {
+                    labels: paneles.map(p => p.nombre),
+                    datasets: [
+                        { label: 'Mensajes', data: paneles.map(p => p.mensajes), backgroundColor: '#667eea', borderRadius: 4 },
+                        { label: 'Objetivo', data: paneles.map(p => p.objetivo), backgroundColor: '#cbd5e0', borderRadius: 4 }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+            });
+
+            const campanias = datos.mejoresCampanias.slice(0, 8);
+            const ctxC = document.getElementById('modalChartCPM').getContext('2d');
+            if (modalChartCPM) modalChartCPM.destroy();
+            modalChartCPM = new Chart(ctxC, {
+                type: 'bar', indexAxis: 'y',
+                data: {
+                    labels: campanias.map(c => c.nombre.substring(0, 20)),
+                    datasets: [{ label: 'CPM', data: campanias.map(c => c.cpm), backgroundColor: campanias.map(c => c.cpm < 0.80 ? '#10b981' : c.cpm < 1.20 ? '#f59e0b' : '#ef4444'), borderRadius: 4 }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function cerrarModal(e) {
+            if (e.target === document.getElementById('modal-historial'))
+                document.getElementById('modal-historial').classList.remove('open');
         }
 
         cargarDatos();
