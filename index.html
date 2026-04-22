@@ -521,6 +521,7 @@
         function mostrarSemanal(semanal) {
             const r = semanal.resumen;
             const resumenHTML = `
+                <p style="color:#666; margin-bottom:20px; font-size:0.95em;">📅 Del <strong>${semanal.fechaInicio}</strong> al <strong>${semanal.fechaFin}</strong></p>
                 <div class="resumen-grid">
                     <div class="card"><h3>Días</h3><div class="valor">${semanal.diasIncluidos}</div></div>
                     <div class="card"><h3>Total Mensajes</h3><div class="valor">${r.totalMensajesSemanal.toLocaleString()}</div></div>
