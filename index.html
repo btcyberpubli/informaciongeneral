@@ -701,16 +701,25 @@
             }
             let html = '';
             datos.forEach(grupo => {
-                html += `<h3 style="margin: 30px 0 15px; color:#667eea; font-size:1.1em;">👤 ${grupo.nombre}</h3>`;
+                html += `<details style="margin-bottom:12px; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden;">
+                    <summary style="padding:14px 20px; background:#f8f9fa; cursor:pointer; font-weight:700; font-size:1.05em; color:#667eea; list-style:none; display:flex; align-items:center; gap:8px; user-select:none;">
+                        👤 ${grupo.nombre}
+                        <span style="margin-left:auto; font-size:0.8em; color:#999; font-weight:400;">${grupo.paginas.length} página${grupo.paginas.length !== 1 ? 's' : ''}${grupo.bms?.length ? ` · ${grupo.bms.length} BM` : ''}</span>
+                    </summary>
+                    <div style="padding:20px;">`;
 
-                // Tabla páginas
-                html += `<h4 style="margin: 0 0 10px; color:#555; font-size:0.95em;">📄 Páginas</h4>`;
-                html += `<table><thead><tr>
-                    <th>Página</th><th>Categoría</th><th>Negocio</th>
-                    <th>Followers</th><th>Fans</th>
-                    <th>Imp. hoy</th><th>Reac. hoy</th><th>Imp. 30d</th><th>Reac. 30d</th>
-                    <th>Último post</th>
-                </tr></thead><tbody>`;
+                // Sub-desplegable Páginas
+                html += `<details open style="margin-bottom:10px; border:1px solid #e2e8f0; border-radius:6px; overflow:hidden;">
+                    <summary style="padding:10px 16px; background:#f0f4ff; cursor:pointer; font-weight:600; font-size:0.9em; color:#4a5568; list-style:none; display:flex; align-items:center; gap:6px; user-select:none;">
+                        📄 Páginas <span style="margin-left:auto; font-size:0.85em; color:#999; font-weight:400;">${grupo.paginas.length}</span>
+                    </summary>
+                    <div style="overflow-x:auto;">
+                    <table style="margin-bottom:0;"><thead><tr>
+                        <th>Página</th><th>Categoría</th><th>Negocio</th>
+                        <th>Followers</th><th>Fans</th>
+                        <th>Imp. hoy</th><th>Reac. hoy</th><th>Imp. 30d</th><th>Reac. 30d</th>
+                        <th>Último post</th>
+                    </tr></thead><tbody>`;
                 grupo.paginas.forEach(p => {
                     const ultimoPost = p.fechaUltimoPost ? new Date(p.fechaUltimoPost).toLocaleDateString('es-AR') : '-';
                     html += `<tr>
@@ -726,14 +735,18 @@
                         <td style="font-size:0.85em">${ultimoPost}</td>
                     </tr>`;
                 });
-                html += `</tbody></table>`;
+                html += `</tbody></table></div></details>`;
 
-                // Tabla BMs
+                // Sub-desplegable BMs
                 if (grupo.bms && grupo.bms.length) {
-                    html += `<h4 style="margin: 20px 0 10px; color:#555; font-size:0.95em;">🏢 Business Managers</h4>`;
-                    html += `<table><thead><tr>
-                        <th>BM</th><th>Verificado</th><th>WhatsApp</th><th>Teléfono</th><th>Último uso WA</th>
-                    </tr></thead><tbody>`;
+                    html += `<details style="border:1px solid #e2e8f0; border-radius:6px; overflow:hidden;">
+                        <summary style="padding:10px 16px; background:#f0f4ff; cursor:pointer; font-weight:600; font-size:0.9em; color:#4a5568; list-style:none; display:flex; align-items:center; gap:6px; user-select:none;">
+                            🏢 Business Managers <span style="margin-left:auto; font-size:0.85em; color:#999; font-weight:400;">${grupo.bms.length}</span>
+                        </summary>
+                        <div style="overflow-x:auto;">
+                        <table style="margin-bottom:0;"><thead><tr>
+                            <th>BM</th><th>Verificado</th><th>WhatsApp</th><th>Teléfono</th><th>Último uso WA</th>
+                        </tr></thead><tbody>`;
                     grupo.bms.forEach(bm => {
                         const verificadoBadge = bm.verificado === 'verified'
                             ? `<span class="status-badge status-ok">✅ Verificado</span>`
@@ -746,8 +759,10 @@
                             <td style="font-size:0.85em">${bm.waUltimoUso || '-'}</td>
                         </tr>`;
                     });
-                    html += `</tbody></table>`;
+                    html += `</tbody></table></div></details>`;
                 }
+
+                html += `</div></details>`;
             });
             document.getElementById('paginas-contenido').innerHTML = html;
         }
