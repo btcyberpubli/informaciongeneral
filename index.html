@@ -413,7 +413,7 @@
             <div id="modal-analisis"></div>
             <h2 style="margin-top:40px; margin-bottom:20px;">Mejores Campañas</h2>
             <table>
-                <thead><tr><th>Imagen</th><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th><th>Estado</th></tr></thead>
+                <thead><tr><th>Campaña</th><th>Mensajes</th><th>Gasto</th><th>CPM</th><th>Estado</th></tr></thead>
                 <tbody id="modal-tbody-mejores"></tbody>
             </table>
             <h2 style="margin-top:40px; margin-bottom:20px;">Rendimiento por Panel</h2>
@@ -547,16 +547,16 @@
             const analisis = await res.json();
             let html = '<div>';
             if (analisis.panelesBajosMensajes?.length) {
-                html += `<div class="alert alert-danger"><h3>⚠️ Paneles < 100 msgs</h3><ul>${analisis.panelesBajosMensajes.map(p => `<li>${p.nombre}: ${p.mensajes}</li>`).join('')}</ul></div>`;
+                html += `<div class="alert alert-danger"><h3>⚠️ Paneles con menos de 100 mensajes</h3><ul>${analisis.panelesBajosMensajes.map(p => `<li>${p.nombre}: ${p.mensajes}</li>`).join('')}</ul></div>`;
             }
             if (analisis.campaniasCPMAlto?.length) {
-                html += `<div class="alert alert-warning"><h3>⚠️ CPM > $1.20</h3><ul>${analisis.campaniasCPMAlto.map(c => `<li>${c.nombre}: $${c.cpm.toFixed(2)}</li>`).join('')}</ul></div>`;
+                html += `<div class="alert alert-warning"><h3>⚠️ Campañas con costo por mensaje mayor a $1.20</h3><ul>${analisis.campaniasCPMAlto.map(c => `<li>${c.nombre}: $${c.cpm.toFixed(2)}</li>`).join('')}</ul></div>`;
             }
             if (analisis.panelesCargaBaja?.length) {
-                html += `<div class="alert alert-warning"><h3>⚠️ % Carga < 20%</h3><ul>${analisis.panelesCargaBaja.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+                html += `<div class="alert alert-warning"><h3>⚠️ Paneles con porcentaje de carga menor al 20%</h3><ul>${analisis.panelesCargaBaja.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
             }
             if (analisis.panelesCargaAlta?.length) {
-                html += `<div class="alert alert-warning"><h3>✋ % Carga > 40%</h3><ul>${analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+                html += `<div class="alert alert-warning"><h3>✋ Paneles con porcentaje de carga mayor al 40%</h3><ul>${analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
             }
             html += '</div>';
             document.getElementById('analisis-diario').innerHTML = html;
@@ -702,6 +702,9 @@
             let html = '';
             datos.forEach(grupo => {
                 html += `<h3 style="margin: 30px 0 15px; color:#667eea; font-size:1.1em;">👤 ${grupo.nombre}</h3>`;
+
+                // Tabla páginas
+                html += `<h4 style="margin: 0 0 10px; color:#555; font-size:0.95em;">📄 Páginas</h4>`;
                 html += `<table><thead><tr>
                     <th>Página</th><th>Categoría</th><th>Negocio</th>
                     <th>Followers</th><th>Fans</th><th>Posts</th>
@@ -725,6 +728,27 @@
                     </tr>`;
                 });
                 html += `</tbody></table>`;
+
+                // Tabla BMs
+                if (grupo.bms && grupo.bms.length) {
+                    html += `<h4 style="margin: 20px 0 10px; color:#555; font-size:0.95em;">🏢 Business Managers</h4>`;
+                    html += `<table><thead><tr>
+                        <th>BM</th><th>Verificado</th><th>WhatsApp</th><th>Teléfono</th><th>Último uso WA</th>
+                    </tr></thead><tbody>`;
+                    grupo.bms.forEach(bm => {
+                        const verificadoBadge = bm.verificado === 'verified'
+                            ? `<span class="status-badge status-ok">✅ Verificado</span>`
+                            : `<span class="status-badge status-fail">❌ No verificado</span>`;
+                        html += `<tr>
+                            <td><strong>${bm.nombre || '-'}</strong></td>
+                            <td>${verificadoBadge}</td>
+                            <td>${bm.waNombre || '-'}</td>
+                            <td>${bm.waTelefono || '-'}</td>
+                            <td style="font-size:0.85em">${bm.waUltimoUso || '-'}</td>
+                        </tr>`;
+                    });
+                    html += `</tbody></table>`;
+                }
             });
             document.getElementById('paginas-contenido').innerHTML = html;
         }
@@ -769,13 +793,13 @@
             // Análisis
             let analisisHTML = '<div>';
             if (datos.analisis?.panelesBajosMensajes?.length)
-                analisisHTML += `<div class="alert alert-danger"><h3>⚠️ Paneles < 100 msgs</h3><ul>${datos.analisis.panelesBajosMensajes.map(p => `<li>${p.nombre}: ${p.mensajes}</li>`).join('')}</ul></div>`;
+                analisisHTML += `<div class="alert alert-danger"><h3>⚠️ Paneles con menos de 100 mensajes</h3><ul>${datos.analisis.panelesBajosMensajes.map(p => `<li>${p.nombre}: ${p.mensajes}</li>`).join('')}</ul></div>`;
             if (datos.analisis?.campaniasCPMAlto?.length)
-                analisisHTML += `<div class="alert alert-warning"><h3>⚠️ CPM > $1.20</h3><ul>${datos.analisis.campaniasCPMAlto.map(c => `<li>${c.nombre}: $${c.cpm.toFixed(2)}</li>`).join('')}</ul></div>`;
+                analisisHTML += `<div class="alert alert-warning"><h3>⚠️ Campañas con costo por mensaje mayor a $1.20</h3><ul>${datos.analisis.campaniasCPMAlto.map(c => `<li>${c.nombre}: $${c.cpm.toFixed(2)}</li>`).join('')}</ul></div>`;
             if (datos.analisis?.panelesCargaBaja?.length)
-                analisisHTML += `<div class="alert alert-warning"><h3>⚠️ % Carga < 20%</h3><ul>${datos.analisis.panelesCargaBaja.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+                analisisHTML += `<div class="alert alert-warning"><h3>⚠️ Paneles con porcentaje de carga menor al 20%</h3><ul>${datos.analisis.panelesCargaBaja.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
             if (datos.analisis?.panelesCargaAlta?.length)
-                analisisHTML += `<div class="alert alert-warning"><h3>✋ % Carga > 40%</h3><ul>${datos.analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+                analisisHTML += `<div class="alert alert-warning"><h3>✋ Paneles con porcentaje de carga mayor al 40%</h3><ul>${datos.analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
             analisisHTML += '</div>';
             document.getElementById('modal-analisis').innerHTML = analisisHTML;
 
@@ -783,7 +807,6 @@
             document.getElementById('modal-tbody-mejores').innerHTML = datos.mejoresCampanias
                 .sort((a, b) => b.mensajes - a.mensajes).slice(0, 10)
                 .map(c => `<tr>
-                    <td><img src="${c.imagenes?.image_url || 'https://via.placeholder.com/50'}" style="width:50px;height:50px;border-radius:4px;object-fit:cover;"></td>
                     <td><strong>${c.nombre}</strong></td>
                     <td>${c.mensajes}</td>
                     <td>$${c.gasto.toFixed(2)}</td>
