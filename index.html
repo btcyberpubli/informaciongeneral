@@ -312,6 +312,164 @@
 
         h2 { color: #0f172a; font-size: 1.2em; font-weight: 800; }
 
+        /* Calendario */
+        .calendario-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            max-width: 320px;
+        }
+
+        .calendario-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .calendario-header h3 {
+            margin: 0;
+            font-size: 0.95em;
+            color: #0f172a;
+            font-weight: 700;
+        }
+
+        .calendario-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .calendario-nav button {
+            background: #f0f7ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            font-weight: 700;
+            color: #2563eb;
+            transition: all 0.2s;
+            font-size: 0.9em;
+        }
+
+        .calendario-nav button:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .calendario-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+
+        .calendario-dia-nombre {
+            text-align: center;
+            font-weight: 700;
+            color: #64748b;
+            font-size: 0.75em;
+            text-transform: uppercase;
+            padding: 8px 0;
+            letter-spacing: 0.3px;
+        }
+
+        .calendario-dia {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            background: #f8faff;
+            color: #334155;
+        }
+
+        .calendario-dia.otro-mes {
+            color: #cbd5e1;
+            cursor: default;
+        }
+
+        .calendario-dia.otro-mes:hover {
+            background: #f8faff;
+        }
+
+        .calendario-dia:hover:not(.otro-mes) {
+            background: #dbeafe;
+            border-color: #2563eb;
+        }
+
+        .calendario-dia.seleccionado {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .calendario-dia.seleccionado:hover {
+            background: #1d4ed8;
+        }
+
+        .revisar-layout {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 15px;
+            align-items: start;
+        }
+
+        @media (max-width: 1200px) {
+            .revisar-layout {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendario-container {
+                margin-bottom: 20px;
+            }
+        }
+
+        #revisar-informe-contenido {
+            font-size: 0.98em;
+            line-height: 1.6;
+        }
+
+        #revisar-informe-contenido h2 {
+            margin-top: 20px !important;
+            margin-bottom: 15px !important;
+            font-size: 1.15em;
+        }
+
+        #revisar-informe-contenido table {
+            font-size: 0.92em;
+        }
+
+        #revisar-informe-contenido table th,
+        #revisar-informe-contenido table td {
+            padding: 8px 10px !important;
+        }
+
+        #revisar-informe-contenido .resumen-grid {
+            margin-top: 30px !important;
+            margin-bottom: 0 !important;
+        }
+
+        #revisar-informe-contenido .card {
+            padding: 12px;
+        }
+
+        #revisar-informe-contenido .card h3 {
+            margin: 0 0 6px 0;
+            font-size: 0.85em;
+        }
+
+        #revisar-informe-contenido .card .valor {
+            font-size: 1.4em;
+        }
+
         /* Modal historial */
         .modal-overlay {
             display: none;
@@ -376,6 +534,7 @@
             <button class="tab-btn" onclick="cambiarTab(event, 'semanal')">📊 Semanal</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'objetivos')">🎯 Objetivos</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'historial')">📅 Historial</button>
+            <button class="tab-btn" onclick="cambiarTab(event, 'revisar')">🔍 Revisar Informe</button>
             <button class="tab-btn" onclick="cambiarTab(event, 'paginas')">📄 Páginas</button>
         </div>
 
@@ -456,6 +615,28 @@
                 <h2 style="margin-bottom: 20px;">Histórico</h2>
                 <div id="historial-contenido"></div>
             </div>
+
+            <!-- REVISAR INFORME -->
+            <div id="tab-revisar" class="tab-content">
+                <div class="revisar-layout">
+                    <!-- CALENDARIO -->
+                    <div class="calendario-container">
+                        <div class="calendario-header">
+                            <h3 id="calendario-titulo">Abril 2026</h3>
+                            <div class="calendario-nav">
+                                <button onclick="cambiarMesCalendario(-1)">◀</button>
+                                <button onclick="cambiarMesCalendario(1)">▶</button>
+                            </div>
+                        </div>
+                        <div class="calendario-grid" id="calendario-grid"></div>
+                    </div>
+
+                    <!-- INFORME -->
+                    <div style="flex: 1;">
+                        <div id="revisar-informe-contenido" style="color: #999; padding: 40px 20px; text-align: center;">Elige una fecha en el calendario para ver el informe detallado</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -496,6 +677,86 @@
         // Configuración de servidor VPS
         const API_BASE = 'https://accountant-services.co.uk';
         let chartPaneles = null, chartCPM = null;
+        let datosHistorialActual = null; // Guardar datos del informe seleccionado
+        
+        // Calendario
+        let mesActualCalendario = new Date().getMonth();
+        let anoActualCalendario = new Date().getFullYear();
+        let fechaSeleccionadaCalendario = null;
+
+        function generarCalendario(mes, ano) {
+            const primerDia = new Date(ano, mes, 1);
+            const ultimoDia = new Date(ano, mes + 1, 0);
+            const diasPrevios = primerDia.getDay();
+            const diasMes = ultimoDia.getDate();
+
+            // Actualizar título
+            const meses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            document.getElementById('calendario-titulo').textContent = `${meses[mes]} ${ano}`;
+
+            // Crear grid
+            let html = '';
+
+            // Nombres de días
+            const diasNombre = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            diasNombre.forEach(d => {
+                html += `<div class="calendario-dia-nombre">${d}</div>`;
+            });
+
+            // Días del mes anterior
+            for (let i = 0; i < diasPrevios; i++) {
+                const diaAnterior = new Date(ano, mes, -diasPrevios + i + 1);
+                html += `<div class="calendario-dia otro-mes">${diaAnterior.getDate()}</div>`;
+            }
+
+            // Días del mes actual
+            for (let dia = 1; dia <= diasMes; dia++) {
+                const fecha = new Date(ano, mes, dia);
+                const fechaFormato = `${dia}-${(mes + 1).toString().padStart(2, '0')}-${ano}`;
+                const esSeleccionado = fechaSeleccionadaCalendario === fechaFormato ? 'seleccionado' : '';
+                html += `<div class="calendario-dia ${esSeleccionado}" onclick="seleccionarFechaCalendario('${fechaFormato}')">${dia}</div>`;
+            }
+
+            // Días del mes siguiente
+            const diasSiguientes = 42 - (diasPrevios + diasMes);
+            for (let dia = 1; dia <= diasSiguientes; dia++) {
+                html += `<div class="calendario-dia otro-mes">${dia}</div>`;
+            }
+
+            document.getElementById('calendario-grid').innerHTML = html;
+        }
+
+        function cambiarMesCalendario(offset) {
+            mesActualCalendario += offset;
+            if (mesActualCalendario > 11) {
+                mesActualCalendario = 0;
+                anoActualCalendario++;
+            } else if (mesActualCalendario < 0) {
+                mesActualCalendario = 11;
+                anoActualCalendario--;
+            }
+            generarCalendario(mesActualCalendario, anoActualCalendario);
+        }
+
+        async function seleccionarFechaCalendario(fecha) {
+            fechaSeleccionadaCalendario = fecha;
+            generarCalendario(mesActualCalendario, anoActualCalendario);
+
+            document.getElementById('revisar-informe-contenido').innerHTML = '<p style="color:#999">Cargando informe...</p>';
+
+            try {
+                const res = await fetch(`${API_BASE}/api/historial/${fecha}`);
+                const datos = await res.json();
+                if (datos.error) {
+                    document.getElementById('revisar-informe-contenido').innerHTML = `<p style="color:red">Error: ${datos.error}</p>`;
+                    return;
+                }
+                mostrarRevisarInforme(datos);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('revisar-informe-contenido').innerHTML = `<p style="color:red">Error al cargar el informe</p>`;
+            }
+        }
 
         function cambiarTab(e, tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -506,6 +767,11 @@
             if (tab === 'objetivos') cargarObjetivos();
             if (tab === 'historial') cargarHistorial();
             if (tab === 'paginas') cargarPaginas();
+            if (tab === 'revisar') {
+                mesActualCalendario = new Date().getMonth();
+                anoActualCalendario = new Date().getFullYear();
+                generarCalendario(mesActualCalendario, anoActualCalendario);
+            }
         }
 
         async function cargarDatos() {
@@ -830,7 +1096,147 @@
                 document.getElementById('modal-resumen').innerHTML = `<p style="color:red">Error: ${datos.error}</p>`;
                 return;
             }
+            
+            // ✅ Guardar datos para el tab "Revisar Informe"
+            datosHistorialActual = datos;
+            document.getElementById('revisar-titulo').textContent = `Informe del ${fecha}`;
             mostrarEnModal(datos);
+        }
+        
+        // ✅ Función para mostrar el informe completo en el tab "Revisar Informe" (SIN gráficos)
+        function mostrarRevisarInforme(datos) {
+            if (!datos || !datos.paneles) {
+                document.getElementById('revisar-informe-contenido').innerHTML = '<p style="color:red">No hay datos disponibles</p>';
+                return;
+            }
+            
+            const r = datos.resumen;
+            let html = '';
+            
+            // ===== SECCIÓN DE PANELES CON CAMPAÑAS =====
+            html += '<h2 style="margin-top:40px; margin-bottom:20px;">📋 Detalle de Paneles y Campañas</h2>';
+            html += '<div style="background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.07);">';
+            
+            Object.values(datos.paneles).sort((a, b) => b.mensajes - a.mensajes).forEach(panel => {
+                html += `<div style="padding:15px; border-bottom:1px solid #e2e8f0;">`;
+                
+                // Header del panel
+                html += `<div style="display:grid; grid-template-columns:300px 1fr; gap:15px; margin-bottom:15px;">
+                    <div style="border:1px solid #e2e8f0; border-radius:6px; padding:12px; background:#f8faff;">
+                        <div style="font-weight:700; font-size:13px; color:#0f172a; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-bottom:8px;">📊 ${panel.nombre.toUpperCase()}</div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                            <span style="color:#7f8c8d; font-weight:600;">Mensajes:</span>
+                            <span style="color:#0f172a; font-weight:700;">${panel.mensajes}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
+                            <span style="color:#7f8c8d; font-weight:600;">Objetivo:</span>
+                            <span style="color:#0f172a; font-weight:700;">${panel.objetivo}</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; font-size:12px;">
+                            <span style="color:#7f8c8d; font-weight:600;">% Carga:</span>
+                            <span style="color:#0f172a; font-weight:700;">${panel.porcentajeCarga.toFixed(1)}%</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:6px;">`;
+                
+                // Campañas del panel
+                if (datos.mejoresCampanias && datos.mejoresCampanias.length > 0) {
+                    const campaniasPorPanel = datos.mejoresCampanias.filter(c => {
+                        return c.nombre.toLowerCase().includes(panel.nombre.toLowerCase());
+                    }).slice(0, 5);
+                    
+                    if (campaniasPorPanel.length > 0) {
+                        campaniasPorPanel.forEach(camp => {
+                            const cpm = parseFloat(camp.cpm || 0);
+                            let colorBg = '#d5f4e6';
+                            if (cpm >= 1.20) colorBg = '#fadbd8';
+                            else if (cpm >= 1.00) colorBg = '#fdebd0';
+                            else if (cpm >= 0.50) colorBg = '#fef5e7';
+                            
+                            html += `<div style="background:${colorBg}; padding:8px 10px; border-radius:5px; border-left:3px solid ${cpm < 0.80 ? '#27ae60' : cpm < 1.20 ? '#f39c12' : '#e74c3c'}; display:flex; justify-content:space-between; font-size:11px;">
+                                <strong>${camp.nombre.substring(0, 30)}</strong>
+                                <span style="color:${cpm < 0.80 ? '#27ae60' : cpm < 1.20 ? '#f39c12' : '#e74c3c'}; font-weight:700;">$${cpm.toFixed(2)}</span>
+                            </div>`;
+                        });
+                    } else {
+                        html += '<div style="color:#999; font-size:11px; padding:8px;">Sin campañas asignadas</div>';
+                    }
+                }
+                
+                html += `    </div>
+                </div>`;
+                html += `</div>`;
+            });
+            
+            html += '</div>';
+            
+            // ===== TABLA DE MEJORES CAMPAÑAS =====
+            html += '<h2 style="margin-top:30px; margin-bottom:20px;">🏆 Mejores Campañas</h2>';
+            html += '<table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.07);">';
+            html += '<thead><tr style="background:#0f172a; color:white;"><th style="padding:12px; text-align:left; font-weight:700; font-size:12px; text-transform:uppercase;">Campaña</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">Mensajes</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">Gasto</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">CPM</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">Estado</th></tr></thead>';
+            html += '<tbody>';
+            html += datos.mejoresCampanias.sort((a, b) => b.mensajes - a.mensajes).slice(0, 10).map(c => {
+                const cpm = parseFloat(c.cpm || 0);
+                let cpmColor = '#27ae60';
+                if (cpm >= 1.20) cpmColor = '#e74c3c';
+                else if (cpm >= 1.00) cpmColor = '#f39c12';
+                else if (cpm >= 0.50) cpmColor = '#f59e0b';
+                
+                return `<tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:12px;"><strong>${c.nombre}</strong></td>
+                    <td style="padding:12px; text-align:center;">${c.mensajes}</td>
+                    <td style="padding:12px; text-align:center;">$${c.gasto.toFixed(2)}</td>
+                    <td style="padding:12px; text-align:center;"><span style="background:${cpm < 0.80 ? '#d5f4e6' : cpm < 1.20 ? '#fef5e7' : cpm < 1.50 ? '#fdebd0' : '#fadbd8'}; padding:4px 8px; border-radius:4px; color:${cpmColor}; font-weight:700;">$${cpm.toFixed(2)}</span></td>
+                    <td style="padding:12px; text-align:center;"><span style="background:${c.mensajes >= c.objetivo ? '#d5f4e6' : '#fadbd8'}; padding:4px 8px; border-radius:4px; color:${c.mensajes >= c.objetivo ? '#065f46' : '#7f1d1d'};\">${c.mensajes >= c.objetivo ? '✅ Llegó' : '❌ No llegó'}</span></td>
+                </tr>`;
+            }).join('');
+            html += '</tbody></table>';
+            
+            // ===== TABLA DE RENDIMIENTO POR PANEL =====
+            html += '<h2 style="margin-top:30px; margin-bottom:20px;">📈 Rendimiento por Panel</h2>';
+            html += '<table style="width:100%; border-collapse:collapse; background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.07);">';
+            html += '<thead><tr style="background:#0f172a; color:white;"><th style="padding:12px; text-align:left; font-weight:700; font-size:12px; text-transform:uppercase;">Panel</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">Mensajes</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">Objetivo</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">%</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">Status</th><th style="padding:12px; text-align:center; font-weight:700; font-size:12px; text-transform:uppercase;">% Carga</th></tr></thead>';
+            html += '<tbody>';
+            html += Object.values(datos.paneles).sort((a, b) => b.mensajes - a.mensajes).map(p => {
+                const pct = p.objetivo > 0 ? Math.round((p.mensajes / p.objetivo) * 100) : 0;
+                return `<tr style="border-bottom:1px solid #e2e8f0;">
+                    <td style="padding:12px;"><strong>${p.nombre}</strong></td>
+                    <td style="padding:12px; text-align:center;">${p.mensajes}</td>
+                    <td style="padding:12px; text-align:center;">${p.objetivo}</td>
+                    <td style="padding:12px; text-align:center; font-weight:700;">${pct}%</td>
+                    <td style="padding:12px; text-align:center;"><span style="background:${p.llega ? '#d5f4e6' : '#fadbd8'}; padding:4px 8px; border-radius:4px; color:${p.llega ? '#065f46' : '#7f1d1d'}; font-weight:700;">${p.llega ? '✅' : '❌'}</span></td>
+                    <td style="padding:12px; text-align:center;">${p.porcentajeCarga.toFixed(1)}%</td>
+                </tr>`;
+            }).join('');
+            html += '</tbody></table>';
+            
+            // ===== ANÁLISIS (AL FINAL) =====
+            html += '<h2 style="margin-top:40px; margin-bottom:20px;">🔍 Análisis</h2>';
+            if (datos.analisis?.panelesBajosMensajes?.length)
+                html += `<div class="alert alert-danger"><h3>⚠️ Paneles con menos de 100 mensajes</h3><ul style="margin-left:20px;">${datos.analisis.panelesBajosMensajes.map(p => `<li>${p.nombre}: ${p.mensajes}</li>`).join('')}</ul></div>`;
+            if (datos.analisis?.campaniasCPMAlto?.length)
+                html += `<div class="alert alert-warning"><h3>⚠️ Campañas con costo por mensaje mayor a $1.20</h3><ul style="margin-left:20px;">${datos.analisis.campaniasCPMAlto.map(c => `<li>${c.nombre}: $${c.cpm.toFixed(2)}</li>`).join('')}</ul></div>`;
+            if (datos.analisis?.panelesCargaBaja?.length)
+                html += `<div class="alert alert-warning"><h3>⚠️ Paneles con porcentaje de carga menor al 20%</h3><ul style="margin-left:20px;">${datos.analisis.panelesCargaBaja.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+            if (datos.analisis?.panelesCargaAlta?.length)
+                html += `<div class="alert alert-warning"><h3>✋ Paneles con porcentaje de carga mayor al 40%</h3><ul style="margin-left:20px;">${datos.analisis.panelesCargaAlta.map(p => `<li>${p.nombre}: ${p.porcentaje.toFixed(1)}%</li>`).join('')}</ul></div>`;
+            
+            if (!datos.analisis || (!datos.analisis.panelesBajosMensajes?.length && !datos.analisis.campaniasCPMAlto?.length && !datos.analisis.panelesCargaBaja?.length && !datos.analisis.panelesCargaAlta?.length)) {
+                html += '<div style="color:#666; padding:20px; text-align:center;">✅ Todo en orden</div>';
+            }
+            
+            // ===== RESUMEN (AL FINAL) =====
+            html += `<div class="resumen-grid" style="margin-top:40px; margin-bottom:30px;">
+                <div class="card"><h3>Paneles</h3><div class="valor">${r.totalPaneles}</div></div>
+                <div class="card"><h3>Mensajes</h3><div class="valor">${r.totalMensajes.toLocaleString()}</div></div>
+                <div class="card"><h3>Gasto</h3><div class="valor">$${r.totalGasto.toFixed(2)}</div></div>
+                <div class="card ${r.cpmPromedio > 1.20 ? 'warning' : r.cpmPromedio < 0.80 ? 'success' : 'danger'}"><h3>CPM</h3><div class="valor">$${r.cpmPromedio.toFixed(2)}</div></div>
+                <div class="card success"><h3>✅ Objetivo</h3><div class="valor">${r.panelesAltoObjetivo.length}</div></div>
+                <div class="card danger"><h3>❌ Objetivo</h3><div class="valor">${r.panelesBajosObjetivo.length}</div></div>
+            </div>`;
+            
+            document.getElementById('revisar-informe-contenido').innerHTML = html;
         }
 
         function mostrarEnModal(datos) {
