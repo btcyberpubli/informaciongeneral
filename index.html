@@ -415,6 +415,19 @@
             background: #1d4ed8;
         }
 
+        /* ✅ Estilos para días sin datos disponibles */
+        .calendario-dia.disabled {
+            background: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+
+        .calendario-dia.disabled:hover {
+            background: #f0f0f0;
+            border-color: transparent;
+        }
+
         .revisar-layout {
             display: grid;
             grid-template-columns: 320px 1fr;
@@ -678,6 +691,7 @@
         const API_BASE = 'https://accountant-services.co.uk';
         let chartPaneles = null, chartCPM = null;
         let datosHistorialActual = null; // Guardar datos del informe seleccionado
+        let fechasDisponibles = []; // ✅ Guardar fechas disponibles para validar en calendario
         
         // Calendario
         let mesActualCalendario = new Date().getMonth();
@@ -714,7 +728,13 @@
                 const fecha = new Date(ano, mes, dia);
                 const fechaFormato = `${dia}-${(mes + 1).toString().padStart(2, '0')}-${ano}`;
                 const esSeleccionado = fechaSeleccionadaCalendario === fechaFormato ? 'seleccionado' : '';
-                html += `<div class="calendario-dia ${esSeleccionado}" onclick="seleccionarFechaCalendario('${fechaFormato}')">${dia}</div>`;
+                
+                // ✅ Verificar si la fecha tiene datos disponibles
+                const tieneData = fechasDisponibles.includes(fechaFormato);
+                const claseDisponible = tieneData ? '' : 'disabled';
+                const onclickAttr = tieneData ? `onclick="seleccionarFechaCalendario('${fechaFormato}')"` : '';
+                
+                html += `<div class="calendario-dia ${esSeleccionado} ${claseDisponible}" ${onclickAttr}>${dia}</div>`;
             }
 
             // Días del mes siguiente
@@ -739,6 +759,12 @@
         }
 
         async function seleccionarFechaCalendario(fecha) {
+            // ✅ Verificar que la fecha tiene datos disponibles
+            if (!fechasDisponibles.includes(fecha)) {
+                alert(`❌ No hay datos disponibles para la fecha ${fecha}`);
+                return;
+            }
+            
             fechaSeleccionadaCalendario = fecha;
             generarCalendario(mesActualCalendario, anoActualCalendario);
 
@@ -746,6 +772,10 @@
 
             try {
                 const res = await fetch(`${API_BASE}/api/historial/${fecha}`);
+                if (!res.ok) {
+                    document.getElementById('revisar-informe-contenido').innerHTML = `<p style="color:red">Error: No se pudo cargar el informe del ${fecha}</p>`;
+                    return;
+                }
                 const datos = await res.json();
                 if (datos.error) {
                     document.getElementById('revisar-informe-contenido').innerHTML = `<p style="color:red">Error: ${datos.error}</p>`;
@@ -1069,6 +1099,10 @@
         async function cargarHistorial() {
             const res = await fetch(`${API_BASE}/api/historial`);
             const hist = await res.json();
+            
+            // ✅ Guardar fechas disponibles para validar en calendario
+            fechasDisponibles = hist.map(h => h.fecha);
+            
             // Ordenar descendente por fecha real (DD-MM-YYYY → comparable)
             hist.sort((a, b) => {
                 const [da, ma, ya] = a.fecha.split('-');
@@ -1081,6 +1115,9 @@
                 ? `<table><thead><tr><th>Fecha</th><th>Acción</th></tr></thead><tbody>${hist.map(h => `<tr><td>${fmt(h.fecha)}</td><td><button class="btn btn-primary" style="padding: 6px 12px; font-size: 0.85em;" onclick="verHistorial('${h.fecha}')">Ver</button></td></tr>`).join('')}</tbody></table>`
                 : '<p>Sin historial</p>';
             document.getElementById('historial-contenido').innerHTML = html;
+            
+            // ✅ Regenerar calendario para mostrar días disponibles
+            generarCalendario(mesActualCalendario, anoActualCalendario);
         }
 
         let modalChartPaneles = null, modalChartCPM = null;
@@ -1114,62 +1151,84 @@
             let html = '';
             
             // ===== SECCIÓN DE PANELES CON CAMPAÑAS =====
-            html += '<h2 style="margin-top:40px; margin-bottom:20px;">📋 Detalle de Paneles y Campañas</h2>';
-            html += '<div style="background:white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.07);">';
+            html += '<h2 style="margin-top:0; margin-bottom:20px;">📋 Detalle de Paneles y Campañas</h2>';
             
             Object.values(datos.paneles).sort((a, b) => b.mensajes - a.mensajes).forEach(panel => {
-                html += `<div style="padding:15px; border-bottom:1px solid #e2e8f0;">`;
-                
-                // Header del panel
-                html += `<div style="display:grid; grid-template-columns:300px 1fr; gap:15px; margin-bottom:15px;">
-                    <div style="border:1px solid #e2e8f0; border-radius:6px; padding:12px; background:#f8faff;">
-                        <div style="font-weight:700; font-size:13px; color:#0f172a; border-bottom:2px solid #27ae60; padding-bottom:8px; margin-bottom:8px;">📊 ${panel.nombre.toUpperCase()}</div>
-                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                            <span style="color:#7f8c8d; font-weight:600;">Mensajes:</span>
-                            <span style="color:#0f172a; font-weight:700;">${panel.mensajes}</span>
+                // Panel info - izquierda
+                html += `<div style="display:grid; grid-template-columns:320px 1fr; gap:10px; background:#f8faff; padding:10px; border-radius:6px; border-left:3px solid #27ae60; margin-bottom:15px;">
+                    
+                    <div style="border:1px solid #e0e0e0; border-radius:5px; padding:10px; background:white;">
+                        <div style="font-weight:700; font-size:13px; color:#2c3e50; border-bottom:2px solid #27ae60; padding-bottom:6px; margin-bottom:8px;">📊 ${panel.nombre.toUpperCase()}</div>
+                        
+                        <div style="display:flex; justify-content:flex-start; font-size:12px; margin-bottom:5px; gap:8px;">
+                            <span style="color:#7f8c8d; font-weight:600; min-width:80px;">Mensajes:</span>
+                            <span style="color:#2c3e50; font-weight:700;">${panel.mensajes}</span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:6px;">
-                            <span style="color:#7f8c8d; font-weight:600;">Objetivo:</span>
-                            <span style="color:#0f172a; font-weight:700;">${panel.objetivo}</span>
+                        
+                        <div style="display:flex; justify-content:flex-start; font-size:12px; margin-bottom:5px; gap:8px;">
+                            <span style="color:#7f8c8d; font-weight:600; min-width:80px;">Objetivo:</span>
+                            <span style="color:#2c3e50; font-weight:700;">${panel.objetivo}</span>
                         </div>
-                        <div style="display:flex; justify-content:space-between; font-size:12px;">
-                            <span style="color:#7f8c8d; font-weight:600;">% Carga:</span>
-                            <span style="color:#0f172a; font-weight:700;">${panel.porcentajeCarga.toFixed(1)}%</span>
+                        
+                        <div style="display:flex; justify-content:flex-start; font-size:12px; margin-bottom:5px; gap:8px;">
+                            <span style="color:#7f8c8d; font-weight:600; min-width:80px;">% Carga:</span>
+                            <span style="color:#2c3e50; font-weight:700;">${panel.porcentajeCarga.toFixed(1)}%</span>
+                        </div>
+                        
+                        <div style="display:flex; justify-content:flex-start; font-size:12px; gap:8px;">
+                            <span style="color:#7f8c8d; font-weight:600; min-width:80px;">Status:</span>
+                            <span style="background:${panel.llega ? '#d5f4e6' : '#fadbd8'}; padding:2px 6px; border-radius:3px; color:${panel.llega ? '#065f46' : '#7f1d1d'}; font-weight:700;">${panel.llega ? '✅ Llegó' : '❌ No llegó'}</span>
                         </div>
                     </div>
                     
+                    <!-- Campañas del panel - derecha -->
                     <div style="display:flex; flex-direction:column; gap:6px;">`;
                 
-                // Campañas del panel
+                // Mostrar campañas del panel
                 if (datos.mejoresCampanias && datos.mejoresCampanias.length > 0) {
                     const campaniasPorPanel = datos.mejoresCampanias.filter(c => {
-                        return c.nombre.toLowerCase().includes(panel.nombre.toLowerCase());
-                    }).slice(0, 5);
+                        const nombrePanel = panel.nombre.toLowerCase().replace(/\s+/g, '');
+                        const nombreCamp = c.nombre.toLowerCase();
+                        // Buscar si el nombre del panel está en la campaña
+                        return nombreCamp.includes(nombrePanel);
+                    });
                     
                     if (campaniasPorPanel.length > 0) {
                         campaniasPorPanel.forEach(camp => {
                             const cpm = parseFloat(camp.cpm || 0);
+                            let colorBorder = '#27ae60'; // Verde
                             let colorBg = '#d5f4e6';
-                            if (cpm >= 1.20) colorBg = '#fadbd8';
-                            else if (cpm >= 1.00) colorBg = '#fdebd0';
-                            else if (cpm >= 0.50) colorBg = '#fef5e7';
                             
-                            html += `<div style="background:${colorBg}; padding:8px 10px; border-radius:5px; border-left:3px solid ${cpm < 0.80 ? '#27ae60' : cpm < 1.20 ? '#f39c12' : '#e74c3c'}; display:flex; justify-content:space-between; font-size:11px;">
-                                <strong>${camp.nombre.substring(0, 30)}</strong>
-                                <span style="color:${cpm < 0.80 ? '#27ae60' : cpm < 1.20 ? '#f39c12' : '#e74c3c'}; font-weight:700;">$${cpm.toFixed(2)}</span>
+                            if (cpm >= 1.50) {
+                                colorBorder = '#e74c3c';
+                                colorBg = '#fadbd8';
+                            } else if (cpm >= 1.20) {
+                                colorBorder = '#f39c12';
+                                colorBg = '#fdebd0';
+                            } else if (cpm >= 0.80) {
+                                colorBorder = '#f59e0b';
+                                colorBg = '#fef5e7';
+                            }
+                            
+                            html += `<div style="background:${colorBg}; padding:8px 10px; border-radius:5px; border-left:3px solid ${colorBorder}; display:flex; justify-content:space-between; align-items:center; font-size:11px; gap:8px;">
+                                <div style="flex:1; min-width:0;">
+                                    <div style="font-weight:700; color:#2c3e50; word-break:break-word;">${camp.nombre.substring(0, 35)}</div>
+                                    <div style="font-size:10px; color:#7f8c8d;">💬 ${camp.mensajes} | 💰 $${camp.gasto.toFixed(2)}</div>
+                                </div>
+                                <div style="text-align:right; flex-shrink:0;">
+                                    <div style="color:${colorBorder}; font-weight:700; font-size:12px;">$${cpm.toFixed(2)}</div>
+                                    <div style="font-size:9px; color:#7f8c8d;">CPM</div>
+                                </div>
                             </div>`;
                         });
                     } else {
-                        html += '<div style="color:#999; font-size:11px; padding:8px;">Sin campañas asignadas</div>';
+                        html += '<div style="color:#999; font-size:11px; padding:8px; text-align:center; background:#f0f0f0; border-radius:4px;">Sin campañas en este panel</div>';
                     }
                 }
                 
                 html += `    </div>
                 </div>`;
-                html += `</div>`;
             });
-            
-            html += '</div>';
             
             // ===== TABLA DE MEJORES CAMPAÑAS =====
             html += '<h2 style="margin-top:30px; margin-bottom:20px;">🏆 Mejores Campañas</h2>';
@@ -1179,16 +1238,24 @@
             html += datos.mejoresCampanias.sort((a, b) => b.mensajes - a.mensajes).slice(0, 10).map(c => {
                 const cpm = parseFloat(c.cpm || 0);
                 let cpmColor = '#27ae60';
-                if (cpm >= 1.20) cpmColor = '#e74c3c';
-                else if (cpm >= 1.00) cpmColor = '#f39c12';
-                else if (cpm >= 0.50) cpmColor = '#f59e0b';
+                let cpmBg = '#d5f4e6';
+                if (cpm >= 1.50) {
+                    cpmColor = '#e74c3c';
+                    cpmBg = '#fadbd8';
+                } else if (cpm >= 1.20) {
+                    cpmColor = '#f39c12';
+                    cpmBg = '#fdebd0';
+                } else if (cpm >= 0.80) {
+                    cpmColor = '#f59e0b';
+                    cpmBg = '#fef5e7';
+                }
                 
                 return `<tr style="border-bottom:1px solid #e2e8f0;">
                     <td style="padding:12px;"><strong>${c.nombre}</strong></td>
-                    <td style="padding:12px; text-align:center;">${c.mensajes}</td>
-                    <td style="padding:12px; text-align:center;">$${c.gasto.toFixed(2)}</td>
-                    <td style="padding:12px; text-align:center;"><span style="background:${cpm < 0.80 ? '#d5f4e6' : cpm < 1.20 ? '#fef5e7' : cpm < 1.50 ? '#fdebd0' : '#fadbd8'}; padding:4px 8px; border-radius:4px; color:${cpmColor}; font-weight:700;">$${cpm.toFixed(2)}</span></td>
-                    <td style="padding:12px; text-align:center;"><span style="background:${c.mensajes >= c.objetivo ? '#d5f4e6' : '#fadbd8'}; padding:4px 8px; border-radius:4px; color:${c.mensajes >= c.objetivo ? '#065f46' : '#7f1d1d'};\">${c.mensajes >= c.objetivo ? '✅ Llegó' : '❌ No llegó'}</span></td>
+                    <td style="padding:12px; text-align:center; font-weight:700;">${c.mensajes}</td>
+                    <td style="padding:12px; text-align:center; font-weight:700;">$${c.gasto.toFixed(2)}</td>
+                    <td style="padding:12px; text-align:center;"><span style="background:${cpmBg}; padding:4px 8px; border-radius:4px; color:${cpmColor}; font-weight:700;">$${cpm.toFixed(2)}</span></td>
+                    <td style="padding:12px; text-align:center;"><span style="background:${c.mensajes >= c.objetivo ? '#d5f4e6' : '#fadbd8'}; padding:4px 8px; border-radius:4px; color:${c.mensajes >= c.objetivo ? '#065f46' : '#7f1d1d'}; font-weight:700;">${c.mensajes >= c.objetivo ? '✅ Llegó' : '❌ No llegó'}</span></td>
                 </tr>`;
             }).join('');
             html += '</tbody></table>';
@@ -1202,11 +1269,11 @@
                 const pct = p.objetivo > 0 ? Math.round((p.mensajes / p.objetivo) * 100) : 0;
                 return `<tr style="border-bottom:1px solid #e2e8f0;">
                     <td style="padding:12px;"><strong>${p.nombre}</strong></td>
-                    <td style="padding:12px; text-align:center;">${p.mensajes}</td>
-                    <td style="padding:12px; text-align:center;">${p.objetivo}</td>
-                    <td style="padding:12px; text-align:center; font-weight:700;">${pct}%</td>
+                    <td style="padding:12px; text-align:center; font-weight:700;">${p.mensajes}</td>
+                    <td style="padding:12px; text-align:center; font-weight:700;">${p.objetivo}</td>
+                    <td style="padding:12px; text-align:center; font-weight:700; background:${pct >= 100 ? '#d5f4e6' : pct >= 75 ? '#fef5e7' : '#fadbd8'}; color:${pct >= 100 ? '#065f46' : pct >= 75 ? '#f39c12' : '#7f1d1d'};">${pct}%</td>
                     <td style="padding:12px; text-align:center;"><span style="background:${p.llega ? '#d5f4e6' : '#fadbd8'}; padding:4px 8px; border-radius:4px; color:${p.llega ? '#065f46' : '#7f1d1d'}; font-weight:700;">${p.llega ? '✅' : '❌'}</span></td>
-                    <td style="padding:12px; text-align:center;">${p.porcentajeCarga.toFixed(1)}%</td>
+                    <td style="padding:12px; text-align:center; font-weight:700;">${p.porcentajeCarga.toFixed(1)}%</td>
                 </tr>`;
             }).join('');
             html += '</tbody></table>';
