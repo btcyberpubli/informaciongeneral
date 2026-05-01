@@ -800,7 +800,8 @@
             if (tab === 'revisar') {
                 mesActualCalendario = new Date().getMonth();
                 anoActualCalendario = new Date().getFullYear();
-                generarCalendario(mesActualCalendario, anoActualCalendario);
+                // ✅ Cargar historial primero, que regenera el calendario con fechas disponibles
+                cargarHistorial();
             }
         }
 
