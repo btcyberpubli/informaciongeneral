@@ -1104,6 +1104,14 @@
             // ✅ Guardar fechas disponibles para validar en calendario
             fechasDisponibles = hist.map(h => h.fecha);
             
+            // ✅ Determinar el mes/año más reciente con datos
+            if (fechasDisponibles.length > 0) {
+                const ultimaFecha = fechasDisponibles[0]; // Asumiendo que viene ordenada
+                const [dia, mes, ano] = ultimaFecha.split('-').map(Number);
+                mesActualCalendario = mes - 1; // JS usa 0-11 para meses
+                anoActualCalendario = ano;
+            }
+            
             // Ordenar descendente por fecha real (DD-MM-YYYY → comparable)
             hist.sort((a, b) => {
                 const [da, ma, ya] = a.fecha.split('-');
